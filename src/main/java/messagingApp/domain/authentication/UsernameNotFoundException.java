@@ -1,4 +1,4 @@
-package domain.authentication;
+package messagingApp.domain.authentication;
 
 public class UsernameNotFoundException extends RuntimeException {
     public UsernameNotFoundException(String message) {

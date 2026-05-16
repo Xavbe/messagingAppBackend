@@ -1,6 +1,6 @@
-package domain.authentication;
+package messagingApp.domain.authentication;
 
-import infrastructure.User;
+import messagingApp.infrastructure.User;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

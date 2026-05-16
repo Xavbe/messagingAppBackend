@@ -1,6 +1,6 @@
-package domain.authentication;
+package messagingApp.domain.authentication;
 
-import infrastructure.User;
+import messagingApp.infrastructure.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,6 +1,7 @@
 package domain.authentication;
 
-import infrastructure.User;
+import messagingApp.domain.authentication.*;
+import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;

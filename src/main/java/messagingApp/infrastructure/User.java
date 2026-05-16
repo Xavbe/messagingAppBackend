@@ -1,4 +1,4 @@
-package infrastructure;
+package messagingApp.infrastructure;
 
 import jakarta.persistence.*;
 
