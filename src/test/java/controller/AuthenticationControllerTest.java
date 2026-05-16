@@ -2,6 +2,7 @@ package controller;
 
 import messagingApp.controller.AuthenticationController;
 import messagingApp.controller.AuthenticationRequest;
+import messagingApp.domain.authentication.UserAlreadyExists;
 import messagingApp.domain.authentication.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,7 @@ class AuthenticationControllerTest {
 
     @Test
     void givenBadInfo_whenRegister_thenUnauthorizedResponse() {
-        doThrow(RuntimeException.class).when(userService).register(BAD_USERNAME_REQUEST.username(),
+        doThrow(UserAlreadyExists.class).when(userService).register(BAD_USERNAME_REQUEST.username(),
                 BAD_USERNAME_REQUEST.password());
 
         ResponseEntity<String> response = authenticationController.register(BAD_USERNAME_REQUEST);
