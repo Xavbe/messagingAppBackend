@@ -9,7 +9,7 @@ plugins {
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
-repositories{
+repositories {
     mavenCentral()
 }
 
@@ -20,7 +20,7 @@ dependencies {
 
 checkstyle {
     toolVersion = '10.21.4'
-    configFile = file('google_checks.xml')
+    config = resources.text.fromArchiveEntry(configurations.checkstyle.first(), 'google_checks.xml')
     showViolations = true
     ignoreFailures = false
 }

@@ -13,12 +13,12 @@ class ConversationTest {
     private final static UUID ANY_UUID = UUID.randomUUID();
 
     @BeforeEach
-    void createConversation (){
+    void createConversation() {
         emptyConversation = new Conversation();
     }
 
     @Test
-    void whenConversationIsCreated_UserIsEmpty(){
+    void whenConversationIsCreated_UserIsEmpty() {
         assertEquals(0, emptyConversation.getUsersId().size());
     }
 
