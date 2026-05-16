@@ -1,4 +1,4 @@
-package domain;
+package messagingApp.domain;
 
 import java.util.ArrayList;
 import java.util.UUID;

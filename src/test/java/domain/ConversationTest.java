@@ -1,5 +1,6 @@
 package domain;
 
+import messagingApp.domain.Conversation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
