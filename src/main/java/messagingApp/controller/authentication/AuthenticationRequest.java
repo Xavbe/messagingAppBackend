@@ -1,4 +1,4 @@
-package messagingApp.controller;
+package messagingApp.controller.authentication;
 
 public record AuthenticationRequest(String username, String password ) {
 }

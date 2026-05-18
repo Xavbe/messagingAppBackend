@@ -1,5 +1,6 @@
 package domain.authentication;
 
+import messagingApp.controller.authentication.JwtAuthentificationSecurity;
 import messagingApp.domain.authentication.*;
 import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,9 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private JwtAuthentificationSecurity jwtAuthentificationSecurity;
+
     @InjectMocks
     private UserService userService;
 
@@ -40,6 +44,8 @@ class UserServiceTest {
     @Test
     void givenUnexistingUserName_whenRegister_thenUserCreated() {
         when(userRepository.findByUsername(CORRECT_USERNAME)).thenReturn(Optional.empty());
+        when(jwtAuthentificationSecurity.generateToken(anyString())).thenReturn("token");
+
 
         userService.register(CORRECT_USERNAME, CORRECT_PASSWORD);
 
@@ -81,6 +87,7 @@ class UserServiceTest {
     void givenCorrectPassword_whenLogin_thenSuccess() {
         when(userRepository.findByUsername(CORRECT_USERNAME)).thenReturn(Optional.of(EXISTING_USER));
         when(EXISTING_USER.getHashedPassword()).thenReturn(BCrypt.hashpw(CORRECT_PASSWORD, BCrypt.gensalt()));
+        when(jwtAuthentificationSecurity.generateToken(anyString())).thenReturn("token");
 
         assertDoesNotThrow(() -> userService.login(CORRECT_USERNAME, CORRECT_PASSWORD));
     }

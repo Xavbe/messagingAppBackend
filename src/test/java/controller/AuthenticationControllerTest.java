@@ -1,7 +1,8 @@
 package controller;
 
-import messagingApp.controller.AuthenticationController;
-import messagingApp.controller.AuthenticationRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import messagingApp.controller.authentication.AuthenticationController;
+import messagingApp.controller.authentication.AuthenticationRequest;
 import messagingApp.domain.authentication.UserAlreadyExists;
 import messagingApp.domain.authentication.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,9 @@ class AuthenticationControllerTest {
             new AuthenticationRequest("Patrice2", "password2*!");
 
     @Mock
+    private HttpServletResponse httpResponse;
+
+    @Mock
     private UserService userService;
 
     @InjectMocks
@@ -36,9 +40,10 @@ class AuthenticationControllerTest {
 
     @Test
     void givenGoodCredential_whenLogin_thenSuccess() {
-        doNothing().when(userService).login(GOOD_USERNAME_REQUEST.username(), GOOD_USERNAME_REQUEST.password());
+        when(userService.login(GOOD_USERNAME_REQUEST.username(), GOOD_USERNAME_REQUEST.password()))
+                .thenReturn("fake-token");
 
-        ResponseEntity<String> response = authenticationController.login(GOOD_USERNAME_REQUEST);
+        ResponseEntity<?> response = authenticationController.login(GOOD_USERNAME_REQUEST, httpResponse);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -48,16 +53,17 @@ class AuthenticationControllerTest {
         doThrow(RuntimeException.class).when(userService).login(BAD_USERNAME_REQUEST.username(),
                 BAD_USERNAME_REQUEST.password());
 
-        ResponseEntity<String> response = authenticationController.login(BAD_USERNAME_REQUEST);
+        ResponseEntity<?> response = authenticationController.login(BAD_USERNAME_REQUEST, httpResponse);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
     void givenGoodInfo_whenRegister_thenSuccess() {
-        doNothing().when(userService).register(GOOD_USERNAME_REQUEST.username(), GOOD_USERNAME_REQUEST.password());
+        when(userService.register(GOOD_USERNAME_REQUEST.username(), GOOD_USERNAME_REQUEST.password()))
+                .thenReturn("fake-token");
 
-        ResponseEntity<String> response = authenticationController.register(GOOD_USERNAME_REQUEST);
+        ResponseEntity<?> response = authenticationController.register(GOOD_USERNAME_REQUEST, httpResponse);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -67,7 +73,7 @@ class AuthenticationControllerTest {
         doThrow(UserAlreadyExists.class).when(userService).register(BAD_USERNAME_REQUEST.username(),
                 BAD_USERNAME_REQUEST.password());
 
-        ResponseEntity<String> response = authenticationController.register(BAD_USERNAME_REQUEST);
+        ResponseEntity<?> response = authenticationController.register(BAD_USERNAME_REQUEST, httpResponse);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
