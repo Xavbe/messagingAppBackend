@@ -1,8 +1,6 @@
-package controller;
+package messagingApp.controller.authentication;
 
 import jakarta.servlet.http.HttpServletResponse;
-import messagingApp.controller.authentication.AuthenticationController;
-import messagingApp.controller.authentication.AuthenticationRequest;
 import messagingApp.domain.authentication.UserAlreadyExists;
 import messagingApp.domain.authentication.UserService;
 import org.junit.jupiter.api.BeforeEach;

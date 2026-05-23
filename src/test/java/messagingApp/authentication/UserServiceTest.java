@@ -1,4 +1,4 @@
-package domain.authentication;
+package messagingApp.authentication;
 
 import messagingApp.controller.authentication.JwtAuthentificationSecurity;
 import messagingApp.domain.authentication.*;

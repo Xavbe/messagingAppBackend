@@ -22,29 +22,38 @@ public class CookieVerification extends OncePerRequestFilter {
     private JwtAuthentificationSecurity jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException, java.io.IOException {
+    public void doFilterInternal(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 FilterChain chain) throws ServletException, IOException, java.io.IOException {
 
         String token = null;
 
         if (request.getCookies() != null) {
-            token = Arrays.stream(request.getCookies())
-                    .filter(c -> c.getName().equals("session"))
-                    .findFirst()
-                    .map(Cookie::getValue)
-                    .orElse(null);
+            token = recoverSessionToken(request);
         }
 
         if (token != null && jwtService.isValid(token)) {
-            String username = jwtService.extractUsername(token);
-
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(username, null, List.of());
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            createAccesAuthentification(token);
         }
 
         chain.doFilter(request, response);
     }
+
+    private String recoverSessionToken(HttpServletRequest request) {
+        return Arrays.stream(request.getCookies())
+                .filter(c -> c.getName().equals("session"))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
+    }
+
+    private void createAccesAuthentification(String token){
+        String username = jwtService.extractUsername(token);
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(username, null, List.of());
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
 }
