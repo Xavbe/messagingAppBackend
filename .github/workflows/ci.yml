@@ -10,7 +10,7 @@ name: Java CI with Gadle
 
 on:
   push:
-    branches: [ "main"]
+    branches: [ "main","dev"]
   pull_request:
     branches: [ "main", "dev"]
 
@@ -37,3 +37,6 @@ jobs:
 
     - name: Run tests
       run: ./gradlew test
+
+    - name: Run End to end tests
+      run: ./gradlew e2eTest
