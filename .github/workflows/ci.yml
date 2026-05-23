@@ -39,4 +39,4 @@ jobs:
       run: ./gradlew test
 
     - name: Run End to end tests
-      run: ./gradlew e2eTest
+      run: ./gradlew e2eTest --info
