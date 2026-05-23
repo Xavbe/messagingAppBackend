@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -36,7 +37,9 @@ class AuthenticationE2ETest {
     void cleanDatabase() {
         userRepository.deleteAll();
 
-        // Ne throw pas sur 4xx/5xx — laisse le test vérifier le status
+        restTemplate.getRestTemplate()
+                .setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
         restTemplate.getRestTemplate().setErrorHandler(new DefaultResponseErrorHandler() {
             @Override
             public boolean hasError(HttpStatusCode statusCode) {
@@ -44,7 +47,7 @@ class AuthenticationE2ETest {
             }
         });
     }
-    
+
     @Test
     void register_persistsUserInDB_andReturnsCookie() {
         ResponseEntity<String> response = restTemplate.postForEntity(
