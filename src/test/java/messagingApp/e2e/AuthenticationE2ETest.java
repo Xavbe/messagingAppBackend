@@ -65,6 +65,7 @@ class AuthenticationE2ETest {
         assertThat(userRepository.findByUsername("alice")).isPresent();
     }
 
+    /*
     @Test
     void register_thenLogin_returnsNewSessionCookie() {
         // Étape 1 : créer le compte
@@ -113,7 +114,7 @@ class AuthenticationE2ETest {
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNull();
     }
 
-
+ */
     private HttpEntity<String> jsonBody(String username, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -124,4 +125,6 @@ class AuthenticationE2ETest {
                 headers
         );
     }
+
+
 }

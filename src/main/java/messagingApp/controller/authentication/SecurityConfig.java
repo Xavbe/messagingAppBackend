@@ -14,7 +14,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Autowired
-    private CookieVerification cookieVerification;
+    private JwtAuthentificationSecurity jwtService;
+
+    @Bean
+    public CookieVerification cookieVerification() {
+        return new CookieVerification(jwtService);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -26,7 +31,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(cookieVerification, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(cookieVerification(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
