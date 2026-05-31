@@ -54,5 +54,4 @@ tasks.register('e2eTest', Test) {
     useJUnitPlatform {
         includeTags 'e2e'
     }
-
 }

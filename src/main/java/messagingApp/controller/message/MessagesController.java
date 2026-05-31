@@ -1,16 +1,15 @@
 package messagingApp.controller.message;
 
-import messagingApp.domain.MessageService;
+import messagingApp.domain.message.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/conversations/{conversationId/messages}")
+@RequestMapping("/conversations/{conversationId}/messages}")
 public class MessagesController {
 
     @Autowired
@@ -18,6 +17,11 @@ public class MessagesController {
 
     @Autowired
     private MessageMapper messageMapper;
+
+    public MessagesController(MessageService messageService, MessageMapper messageMapper) {
+        this.messageService = messageService;
+        this.messageMapper = messageMapper;
+    }
 
     @GetMapping
     public ResponseEntity<MessagesResponse> getMessages(@PathVariable("conversationId") String conversationId,

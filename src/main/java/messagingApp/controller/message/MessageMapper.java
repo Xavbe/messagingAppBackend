@@ -1,6 +1,7 @@
 package messagingApp.controller.message;
 
-import messagingApp.domain.Message;
+import messagingApp.infrastructure.MessageEntity.MessageEntity;
+import messagingApp.infrastructure.MessageEntity.TextMessageEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -8,9 +9,9 @@ import java.util.List;
 
 @Component
 public class MessageMapper {
-    public MessagesResponse getSendMessagesFormat(List<Message> messages) {
+    public MessagesResponse getSendMessagesFormat(List<MessageEntity> messages) {
         List<MessageResponse> messagesResponse = new ArrayList<>();
-        for (Message message1 : messages) {
+        for (MessageEntity message1 : messages) {
             messagesResponse.add(getMessageToSendFormat(message1));
         }
 
@@ -18,24 +19,31 @@ public class MessageMapper {
                 getLastMessagesId(messages));
     }
 
-    private MessageResponse getMessageToSendFormat(Message message) {
-        return new MessageResponse (message.getMessageId(), message.getContent(), getType(message),
+    private MessageResponse getMessageToSendFormat(MessageEntity message) {
+        return new MessageResponse (message.getId(),getContent(message), getType(message),
                 message.getSenderId(),
-                message.getTimestamp());
+                message.getTimeStamp());
     }
 
-    private String getType(Message message) {
-        if (message instanceof Message) {
+    private String getType(MessageEntity message) {
+        if (message instanceof TextMessageEntity) {
             return "TEXT";
         }
         throw new IllegalArgumentException("Message type not supported");
     }
 
-    private String getLastMessagesId(List<Message> messages) {
-        return  messages.getLast().getMessageId().toString();
+    private String getLastMessagesId(List<MessageEntity> messages) {
+        return  messages.getLast().getId().toString();
     }
 
-    private String getLastMessagesOfConversation(List<Message> messages){
+    private String getContent(MessageEntity message) {
+        if (message instanceof TextMessageEntity){
+            return ((TextMessageEntity)message).getContent();
+        }
+        throw new IllegalArgumentException("Message type not supported");
+    }
+
+    private String getLastMessagesOfConversation(List<MessageEntity> messages){
         if (messages == null || messages.size() < 30) {
             return "TRUE";
         } else  {
