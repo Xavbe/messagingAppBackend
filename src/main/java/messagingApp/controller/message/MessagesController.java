@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/conversations/{conversationId}/messages}")
+@RequestMapping("/conversations/{conversationId}/messages")
 public class MessagesController {
 
     @Autowired
