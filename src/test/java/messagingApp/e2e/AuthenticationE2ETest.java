@@ -47,7 +47,7 @@ class AuthenticationE2ETest {
             }
         });
     }
-/*
+
     @Test
     void register_persistsUserInDB_andReturnsCookie() {
         ResponseEntity<String> response = restTemplate.postForEntity(
@@ -75,6 +75,5 @@ class AuthenticationE2ETest {
                 headers
         );
     }
-*/
 
 }
