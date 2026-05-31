@@ -83,5 +83,18 @@ class MessageMapperTest {
     }
 
 
+    @Test
+    void givenSecondMessage_whenGetMessageFormat_LastMessageIdIsTheLastOne(){
+        messages.add(messageEntity);
+        when(messageEntity.getId()).thenReturn(ANOTHER_UUID);
+        when(messageEntity.getSenderId()).thenReturn(UUID.randomUUID());
+        when(messageEntity.getTimeStamp()).thenReturn(LocalDateTime.now().minusDays(1));
+
+        MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
+
+        assertEquals(ANOTHER_UUID.toString(), messageResponses.lastMessageId());
+        assertEquals("TRUE", messageResponses.conversationDone());
+    }
+
 
 }
