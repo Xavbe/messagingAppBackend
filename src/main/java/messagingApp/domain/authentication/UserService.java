@@ -1,5 +1,6 @@
 package messagingApp.domain.authentication;
 
+import messagingApp.controller.authentication.JwtAuthentificationSecurity;
 import messagingApp.infrastructure.User;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,16 +12,20 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void register(String username, String password) {
+    @Autowired
+    private JwtAuthentificationSecurity jwtAuthentificationSecurity;
+
+    public String register(String username, String password) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new UserAlreadyExists(username);
         }
 
         User user = new User(username, BCrypt.hashpw(password, BCrypt.gensalt()));
         userRepository.save(user);
+        return jwtAuthentificationSecurity.generateToken(username);
     }
 
-    public void login(String username, String password) {
+    public String login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -28,5 +33,6 @@ public class UserService {
                 throw new IncorrectPassword("Incorrect password");
         }
 
+        return jwtAuthentificationSecurity.generateToken(username);
     }
 }
