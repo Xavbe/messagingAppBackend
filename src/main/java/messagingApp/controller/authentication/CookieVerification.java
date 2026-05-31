@@ -15,11 +15,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
 public class CookieVerification extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtAuthentificationSecurity jwtService;
+    private final JwtAuthentificationSecurity jwtService;
+
+    public CookieVerification(JwtAuthentificationSecurity jwtService) {
+        this.jwtService = jwtService;
+    }
 
     @Override
     public void doFilterInternal(HttpServletRequest request,

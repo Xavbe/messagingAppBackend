@@ -1,4 +1,4 @@
-package messagingApp.domain;
+package messagingApp.domain.Conversation;
 
 import messagingApp.infrastructure.Conversation;
 import org.springframework.beans.factory.annotation.Autowired;

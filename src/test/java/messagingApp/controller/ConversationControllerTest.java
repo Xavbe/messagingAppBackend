@@ -2,7 +2,7 @@ package messagingApp.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import messagingApp.domain.ConversationService;
+import messagingApp.domain.Conversation.ConversationService;
 import messagingApp.infrastructure.Conversation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
