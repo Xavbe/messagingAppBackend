@@ -1,11 +1,15 @@
 package messagingApp.infrastructure.MessageEntity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 
+@Getter
+@Setter
 @Entity
 @Table(name = "message")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -19,25 +23,10 @@ public abstract class MessageEntity {
     private UUID conversationId;
 
     @Column(name = "senderid", nullable=false)
-    private UUID senderId;
+    private String sender;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getConversationId() {
-        return conversationId;
-    }
-
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public LocalDateTime getTimeStamp() {
-        return timestamp;
-    }
-
+    public abstract void setContent(String content);
 }

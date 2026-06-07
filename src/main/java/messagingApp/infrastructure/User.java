@@ -1,8 +1,12 @@
 package messagingApp.infrastructure;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "users")
 public class User {
 
@@ -16,6 +20,9 @@ public class User {
     @Column(nullable = false)
     private String hashedPassword;
 
+    @Column(nullable = false)
+    private Status status;
+
     public User(String correctUsername, String correctPassword) {
         this.username = correctUsername;
         this.hashedPassword = correctPassword;
@@ -23,21 +30,4 @@ public class User {
 
     public User() {
     }
-
-    public String getUsername(){
-        return username;
-    }
-
-    public String getHashedPassword(){
-        return hashedPassword;
-    }
-
-    public void setUsername(String username){
-        this.username = username;
-    }
-
-    public void setHashedPassword(String hashedPassword){
-        this.hashedPassword = hashedPassword;
-    }
-
 }

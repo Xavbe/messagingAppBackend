@@ -7,6 +7,7 @@ import messagingApp.domain.authentication.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ public class AuthenticationController {
     private UserService userService;
 
     @PostMapping("/login")
+    @SendTo("/user/topic")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
         try{
             String token = userService.login(request.username(), request.password());
@@ -29,6 +31,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
+    @SendTo("/user/topic")
     public ResponseEntity<?> register(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
         try{
             String token = userService.register(request.username(), request.password());
@@ -37,6 +40,13 @@ public class AuthenticationController {
         } catch (UserAlreadyExists e){
             return new ResponseEntity<>("Username already exists", HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    @PostMapping("/disconnect")
+    @SendTo("/user/topic")
+    public ResponseEntity<?> disconnect(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
+        userService.disconnect(request.username());
+        return ResponseEntity.ok("User created");
     }
 
     private void setCookie(String token, HttpServletResponse response){

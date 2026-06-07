@@ -29,15 +29,16 @@ class MessageMapperTest {
 
     private List<MessageEntity> messages;
 
-    private UUID ANY_UUID = UUID.randomUUID();
-    private UUID ANOTHER_UUID = UUID.randomUUID();
+    private final static UUID ANY_UUID = UUID.randomUUID();
+    private final static UUID ANOTHER_UUID = UUID.randomUUID();
+    private final static String ANY_SENDER_NAME = "Bob";
 
     @BeforeEach
     void creatingMessageMapperAndMockMessageEntity() {
         messageMapper = new MessageMapper();
         when(textMessageEntity.getId()).thenReturn(ANY_UUID);
-        when(textMessageEntity.getSenderId()).thenReturn(UUID.randomUUID());
-        when(textMessageEntity.getTimeStamp()).thenReturn(LocalDateTime.now());
+        when(textMessageEntity.getSender()).thenReturn(ANY_SENDER_NAME);
+        when(textMessageEntity.getTimestamp()).thenReturn(LocalDateTime.now());
         messages = new ArrayList<>();
         messages.add(textMessageEntity);
     }
@@ -62,7 +63,10 @@ class MessageMapperTest {
 
     @Test
     void givenFakeTypeMessage_whenGetMessageFormat_thenIllegalArgumentException(){
-        class FakeTypeMessageEntity extends MessageEntity {}
+        class FakeTypeMessageEntity extends MessageEntity {
+            @Override
+            public void setContent(String content) {}
+        }
         FakeTypeMessageEntity fakeTypeMessageEntity = new FakeTypeMessageEntity();
         messages.add(fakeTypeMessageEntity);
 
@@ -73,8 +77,8 @@ class MessageMapperTest {
     void givenSecondMessage_whenGetMessageFormat_OrderStaysTheSame(){
         messages.add(messageEntity);
         when(messageEntity.getId()).thenReturn(ANOTHER_UUID);
-        when(messageEntity.getSenderId()).thenReturn(UUID.randomUUID());
-        when(messageEntity.getTimeStamp()).thenReturn(LocalDateTime.now().minusDays(1));
+        when(messageEntity.getSender()).thenReturn(ANY_SENDER_NAME);
+        when(messageEntity.getTimestamp()).thenReturn(LocalDateTime.now().minusDays(1));
 
         MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
 
@@ -87,8 +91,8 @@ class MessageMapperTest {
     void givenSecondMessage_whenGetMessageFormat_LastMessageIdIsTheLastOne(){
         messages.add(messageEntity);
         when(messageEntity.getId()).thenReturn(ANOTHER_UUID);
-        when(messageEntity.getSenderId()).thenReturn(UUID.randomUUID());
-        when(messageEntity.getTimeStamp()).thenReturn(LocalDateTime.now().minusDays(1));
+        when(messageEntity.getSender()).thenReturn(ANY_SENDER_NAME);
+        when(messageEntity.getTimestamp()).thenReturn(LocalDateTime.now().minusDays(1));
 
         MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
 

@@ -2,6 +2,7 @@ package messagingApp.authentication;
 
 import messagingApp.controller.authentication.JwtAuthentificationSecurity;
 import messagingApp.domain.authentication.*;
+import messagingApp.infrastructure.Status;
 import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -90,6 +92,44 @@ class UserServiceTest {
         when(jwtAuthentificationSecurity.generateToken(anyString())).thenReturn("token");
 
         assertDoesNotThrow(() -> userService.login(CORRECT_USERNAME, CORRECT_PASSWORD));
+    }
+
+    @Test
+    void givenExistingUser_whenDisconnect_thenStatusSetToOffline() {
+        when(userRepository.findByUsername(CORRECT_USERNAME)).thenReturn(Optional.of(EXISTING_USER));
+
+        userService.disconnect(CORRECT_USERNAME);
+
+        verify(EXISTING_USER).setStatus(Status.OFFLINE);
+    }
+
+    @Test
+    void givenNonExistingUser_whenDisconnect_thenNoStatusChange() {
+        when(userRepository.findByUsername(WRONG_USERNAME)).thenReturn(Optional.empty());
+
+        userService.disconnect(WRONG_USERNAME);
+
+        verify(EXISTING_USER, never()).setStatus(any());
+    }
+
+    @Test
+    void givenConnectedUsers_whenFindConnectedUsers_thenReturnOnlineUsers() {
+        List<User> onlineUsers = List.of(EXISTING_USER);
+        when(userRepository.findAllByStatus(Status.ONLINE)).thenReturn(onlineUsers);
+
+        List<User> result = userService.findConnectedUsers();
+
+        assertEquals(onlineUsers, result);
+        verify(userRepository).findAllByStatus(Status.ONLINE);
+    }
+
+    @Test
+    void givenNoConnectedUsers_whenFindConnectedUsers_thenReturnEmptyList() {
+        when(userRepository.findAllByStatus(Status.ONLINE)).thenReturn(List.of());
+
+        List<User> result = userService.findConnectedUsers();
+
+        assertTrue(result.isEmpty());
     }
 
 }
