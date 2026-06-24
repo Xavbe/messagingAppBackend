@@ -18,6 +18,10 @@ import static org.mockito.Mockito.*;
 
 class JwtHandshakeHandlerTest {
 
+    private final static String GOOD_TOKEN = "good-token";
+    private final static String BAD_TOKEN = "bad-token";
+    private final static Long ANY_USER_ID = 7L;
+
     @Mock private JwtAuthentificationSecurity jwt;
     @Mock private ServletServerHttpRequest servletRequest;
     @Mock private HttpServletRequest httpRequest;
@@ -33,23 +37,25 @@ class JwtHandshakeHandlerTest {
     }
 
     @Test
-    void givenValidSessionCookie_whenDetermineUser_thenReturnsPrincipalWithUsername() {
-        Cookie sessionCookie = new Cookie("session", "valid-token");
+    void givenValidSessionCookie_whenDetermineUser_thenReturnsPrincipalWithUserId() {
+        Cookie sessionCookie = new Cookie("session", GOOD_TOKEN);
         when(httpRequest.getCookies()).thenReturn(new Cookie[]{sessionCookie});
-        when(jwt.isValid("valid-token")).thenReturn(true);
-        when(jwt.extractUsername("valid-token")).thenReturn("patrice");
+        when(jwt.isValid(GOOD_TOKEN)).thenReturn(true);
+        when(jwt.extractUserId(GOOD_TOKEN)).thenReturn(ANY_USER_ID);
 
         Principal principal = handler.determineUser(servletRequest, wsHandler, Map.of());
 
         assertNotNull(principal);
-        assertEquals("patrice", principal.getName());
+        assertInstanceOf(CustomUserPrincipal.class, principal);
+        assertEquals(ANY_USER_ID.toString(), principal.getName());
+        assertEquals(ANY_USER_ID, ((CustomUserPrincipal) principal).getUserId());
     }
 
     @Test
     void givenInvalidSessionCookie_whenDetermineUser_thenReturnsNull() {
-        Cookie sessionCookie = new Cookie("session", "bad-token");
+        Cookie sessionCookie = new Cookie("session", BAD_TOKEN);
         when(httpRequest.getCookies()).thenReturn(new Cookie[]{sessionCookie});
-        when(jwt.isValid("bad-token")).thenReturn(false);
+        when(jwt.isValid(BAD_TOKEN)).thenReturn(false);
 
         Principal principal = handler.determineUser(servletRequest, wsHandler, Map.of());
 

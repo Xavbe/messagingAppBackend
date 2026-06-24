@@ -17,15 +17,23 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
     @Column(nullable = false)
     private String hashedPassword;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Status status;
 
-    public User(String correctUsername, String correctPassword) {
-        this.username = correctUsername;
-        this.hashedPassword = correctPassword;
+    public User(String username, String email, String hashedPassword) {
+        this.username = username;
+        this.email = email;
+        this.hashedPassword = hashedPassword;
+    }
+
+    public User(String username, String hashedPassword) {
+        this(username, username + "@example.com", hashedPassword);
     }
 
     public User() {

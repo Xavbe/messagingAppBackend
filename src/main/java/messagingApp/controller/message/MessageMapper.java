@@ -21,7 +21,7 @@ public class MessageMapper {
 
     private MessageResponse getMessageToSendFormat(MessageEntity message) {
         return new MessageResponse (message.getId(),getContent(message), getType(message),
-                message.getSender(),
+                message.getSender().getUsername(),
                 message.getTimestamp());
     }
 

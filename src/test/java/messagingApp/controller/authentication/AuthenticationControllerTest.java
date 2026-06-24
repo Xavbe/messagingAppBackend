@@ -17,10 +17,10 @@ import static org.mockito.Mockito.*;
 class AuthenticationControllerTest {
 
     private static final AuthenticationRequest GOOD_USERNAME_REQUEST =
-            new AuthenticationRequest("Patrice", "password*!");
+            new AuthenticationRequest("Patrice", "patrice@example.com", "password*!");
 
     private static final AuthenticationRequest BAD_USERNAME_REQUEST =
-            new AuthenticationRequest("Patrice2", "password2*!");
+            new AuthenticationRequest("Patrice2", "patrice2@example.com", "password2*!");
 
     @Mock
     private HttpServletResponse httpResponse;
@@ -58,7 +58,8 @@ class AuthenticationControllerTest {
 
     @Test
     void givenGoodInfo_whenRegister_thenSuccess() {
-        when(userService.register(GOOD_USERNAME_REQUEST.username(), GOOD_USERNAME_REQUEST.password()))
+        when(userService.register(GOOD_USERNAME_REQUEST.username(), GOOD_USERNAME_REQUEST.email(),
+                GOOD_USERNAME_REQUEST.password()))
                 .thenReturn("fake-token");
 
         ResponseEntity<?> response = authenticationController.register(GOOD_USERNAME_REQUEST, httpResponse);
@@ -69,6 +70,7 @@ class AuthenticationControllerTest {
     @Test
     void givenBadInfo_whenRegister_thenUnauthorizedResponse() {
         doThrow(UserAlreadyExists.class).when(userService).register(BAD_USERNAME_REQUEST.username(),
+                BAD_USERNAME_REQUEST.email(),
                 BAD_USERNAME_REQUEST.password());
 
         ResponseEntity<?> response = authenticationController.register(BAD_USERNAME_REQUEST, httpResponse);

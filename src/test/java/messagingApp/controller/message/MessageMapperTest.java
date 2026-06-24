@@ -2,11 +2,9 @@ package messagingApp.controller.message;
 
 import messagingApp.infrastructure.MessageEntity.MessageEntity;
 import messagingApp.infrastructure.MessageEntity.TextMessageEntity;
+import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,91 +12,93 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class MessageMapperTest {
 
     private MessageMapper messageMapper;
-
-    @Mock
-    private TextMessageEntity textMessageEntity;
-
-    @Mock
-    private TextMessageEntity messageEntity;
-
+    private User user;
     private List<MessageEntity> messages;
 
-    private final static UUID ANY_UUID = UUID.randomUUID();
-    private final static UUID ANOTHER_UUID = UUID.randomUUID();
-    private final static String ANY_SENDER_NAME = "Bob";
+    private final static UUID UUID_1 = UUID.randomUUID();
+    private final static UUID UUID_2 = UUID.randomUUID();
+    private final static String SENDER = "Bob";
 
     @BeforeEach
-    void creatingMessageMapperAndMockMessageEntity() {
+    void setup() {
+        user  = new User();
+        user.setUsername(SENDER);
         messageMapper = new MessageMapper();
-        when(textMessageEntity.getId()).thenReturn(ANY_UUID);
-        when(textMessageEntity.getSender()).thenReturn(ANY_SENDER_NAME);
-        when(textMessageEntity.getTimestamp()).thenReturn(LocalDateTime.now());
         messages = new ArrayList<>();
-        messages.add(textMessageEntity);
+    }
+
+    private TextMessageEntity createMessage(UUID id, String content, LocalDateTime time) {
+        TextMessageEntity msg = new TextMessageEntity();
+        msg.setId(id);
+        msg.setContent(content);
+        msg.setSender(user);
+        msg.setTimestamp(time);
+        return msg;
     }
 
     @Test
-    void givenCorrectMessage_whenGetMessageFormat_thenMessageIsFromatedMessageResponse() {
-        when(textMessageEntity.getContent()).thenReturn("Hello World");
+    void givenCorrectMessage_whenMapping_thenMessageIsFormatted() {
 
-        MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
+        messages.add(createMessage(UUID_1, "Hello", LocalDateTime.now()));
 
-        assertEquals(ANY_UUID, messageResponses.messages().getFirst().id());
+        MessagesResponse response = messageMapper.getSendMessagesFormat(messages);
+
+        assertEquals(UUID_1, response.messages().getFirst().id());
     }
 
     @Test
-    void givenTextMessage_whenGetMessageFormat_thenTypeIsText(){
-        when(textMessageEntity.getContent()).thenReturn("Hello World");
+    void givenTextMessage_whenMapping_thenTypeIsText() {
 
-        MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
+        messages.add(createMessage(UUID_1, "Hello", LocalDateTime.now()));
 
-        assertEquals("TEXT", messageResponses.messages().getFirst().type());
+        MessagesResponse response = messageMapper.getSendMessagesFormat(messages);
+
+        assertEquals("TEXT", response.messages().getFirst().type());
     }
 
     @Test
-    void givenFakeTypeMessage_whenGetMessageFormat_thenIllegalArgumentException(){
-        class FakeTypeMessageEntity extends MessageEntity {
+    void givenFakeTypeMessage_whenMapping_thenThrowsException() {
+
+        class FakeMessage extends MessageEntity {
             @Override
             public void setContent(String content) {}
         }
-        FakeTypeMessageEntity fakeTypeMessageEntity = new FakeTypeMessageEntity();
-        messages.add(fakeTypeMessageEntity);
 
-        assertThrows(IllegalArgumentException.class, () -> messageMapper.getSendMessagesFormat(messages));
+        FakeMessage fake = new FakeMessage();
+        fake.setId(UUID_1);
+        fake.setTimestamp(LocalDateTime.now());
+
+        messages.add(fake);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> messageMapper.getSendMessagesFormat(messages));
     }
 
     @Test
-    void givenSecondMessage_whenGetMessageFormat_OrderStaysTheSame(){
-        messages.add(messageEntity);
-        when(messageEntity.getId()).thenReturn(ANOTHER_UUID);
-        when(messageEntity.getSender()).thenReturn(ANY_SENDER_NAME);
-        when(messageEntity.getTimestamp()).thenReturn(LocalDateTime.now().minusDays(1));
+    void givenTwoMessages_whenMapping_thenOrderIsPreserved() {
 
-        MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
+        messages.add(createMessage(UUID_1, "A", LocalDateTime.now()));
+        messages.add(createMessage(UUID_2, "B", LocalDateTime.now().minusDays(1)));
 
-        assertEquals(ANOTHER_UUID, messageResponses.messages().getLast().id());
-        assertEquals(ANY_UUID, messageResponses.messages().getFirst().id());
+        MessagesResponse response = messageMapper.getSendMessagesFormat(messages);
+
+        assertEquals(UUID_1, response.messages().get(0).id());
+        assertEquals(UUID_2, response.messages().get(1).id());
     }
-
 
     @Test
-    void givenSecondMessage_whenGetMessageFormat_LastMessageIdIsTheLastOne(){
-        messages.add(messageEntity);
-        when(messageEntity.getId()).thenReturn(ANOTHER_UUID);
-        when(messageEntity.getSender()).thenReturn(ANY_SENDER_NAME);
-        when(messageEntity.getTimestamp()).thenReturn(LocalDateTime.now().minusDays(1));
+    void givenTwoMessages_whenMapping_thenLastMessageIsCorrect() {
 
-        MessagesResponse messageResponses = messageMapper.getSendMessagesFormat(messages);
+        messages.add(createMessage(UUID_1, "A", LocalDateTime.now()));
+        messages.add(createMessage(UUID_2, "B", LocalDateTime.now().minusDays(1)));
 
-        assertEquals(ANOTHER_UUID.toString(), messageResponses.lastMessageId());
-        assertEquals("TRUE", messageResponses.conversationDone());
+        MessagesResponse response = messageMapper.getSendMessagesFormat(messages);
+
+        assertEquals(UUID_2.toString(), response.lastMessageId());
+        assertEquals("TRUE", response.conversationDone());
     }
-
-
 }

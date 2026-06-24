@@ -1,6 +1,7 @@
 package messagingApp.domain.message;
 
 import messagingApp.infrastructure.MessageEntity.MessageEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,16 +16,15 @@ public interface MessageRepository extends JpaRepository<MessageEntity, UUID> {
 
     @Query("""
         SELECT m FROM MessageEntity m
-        WHERE m.conversationId = :conversationId
+        WHERE m.conversation.id = :conversationId
           AND m.timestamp < (
               SELECT m2.timestamp FROM MessageEntity m2 WHERE m2.id = :beforeId
           )
         ORDER BY m.timestamp DESC
-        LIMIT :limit
     """)
     List<MessageEntity> findMessagesBefore(
             @Param("conversationId") UUID conversationId,
             @Param("beforeId") UUID beforeId,
-            @Param("limit") int limit
+            Pageable pageable
     );
 }

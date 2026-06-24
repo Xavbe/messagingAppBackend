@@ -19,21 +19,27 @@ public class MessageWebSocketController {
     private SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/message.send")
-    public void sendMessage(
-            SendMessageRequest request,
-            Principal principal) {
+    public void sendMessage(SendMessageRequest request, Principal principal) {
 
-        MessageEntity message =
-                messageService.sendMessage(
-                        request.conversationId(),
-                        principal.getName(),
-                        request.content()
-                );
+        Long userId = getUserId(principal);
+
+        MessageEntity message = messageService.sendMessage(
+                request.conversationId(),
+                userId,
+                request.content()
+        );
 
         messagingTemplate.convertAndSend(
-                "/topic/conversation/" +
-                        request.conversationId(),
+                "/topic/conversations/" + request.conversationId() + "/messages",
                 message
         );
+    }
+
+    private Long getUserId(Principal principal) {
+        if (principal instanceof CustomUserPrincipal customUserPrincipal) {
+            return customUserPrincipal.getUserId();
+        }
+
+        return Long.parseLong(principal.getName());
     }
 }

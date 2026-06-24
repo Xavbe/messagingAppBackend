@@ -41,10 +41,9 @@ public class JwtHandshakeHandler extends DefaultHandshakeHandler {
 
                         if (jwt.isValid(token)) {
 
-                            String username =
-                                    jwt.extractUsername(token);
+                            Long userId = jwt.extractUserId(token);
 
-                            return () -> username;
+                            return new CustomUserPrincipal(userId);
                         }
                     }
                 }

@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import java.security.Principal;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -18,53 +17,61 @@ class MessageWebSocketControllerTest {
 
     @Mock private MessageService messageService;
     @Mock private SimpMessagingTemplate messagingTemplate;
-    @Mock private Principal principal;
 
     @InjectMocks
     private MessageWebSocketController controller;
 
     private final UUID CONVERSATION_ID = UUID.randomUUID();
-    private final String USERNAME = "patrice";
+    private final Long USER_ID = 1L;
     private final String CONTENT = "Bonjour";
 
-    private final MessageEntity ANY_MESSAGE = new MessageEntity() {
-        @Override
-        public void setContent(String content) {
-        }
-    };
+    private MessageEntity message;
+    private CustomUserPrincipal principal;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(principal.getName()).thenReturn(USERNAME);
+        message = mock(MessageEntity.class);
+        principal = new CustomUserPrincipal(USER_ID);
     }
 
     @Test
-    void givenValidRequest_whenSendMessage_thenMessageSavedAndBroadcast() {
+    void givenValidRequest_whenSendMessage_thenMessageServiceCalledWithUserId() {
         SendMessageRequest request = new SendMessageRequest(CONVERSATION_ID, CONTENT);
-        when(messageService.sendMessage(CONVERSATION_ID, USERNAME, CONTENT))
-                .thenReturn(ANY_MESSAGE);
+
+        when(messageService.sendMessage(CONVERSATION_ID, USER_ID, CONTENT))
+                .thenReturn(message);
 
         controller.sendMessage(request, principal);
 
-        verify(messageService).sendMessage(CONVERSATION_ID, USERNAME, CONTENT);
-        verify(messagingTemplate).convertAndSend(
-                "/topic/conversation/" + CONVERSATION_ID,
-                ANY_MESSAGE
-        );
+        verify(messageService).sendMessage(CONVERSATION_ID, USER_ID, CONTENT);
     }
 
     @Test
-    void givenValidRequest_whenSendMessage_thenCorrectTopicUsed() {
+    void givenValidRequest_whenSendMessage_thenCorrectConversationIdUsed() {
         UUID specificId = UUID.fromString("00000000-0000-0000-0000-000000000001");
         SendMessageRequest request = new SendMessageRequest(specificId, CONTENT);
-        when(messageService.sendMessage(any(), any(), any())).thenReturn(ANY_MESSAGE);
+
+          when(messageService.sendMessage(specificId, USER_ID, CONTENT))
+                .thenReturn(message);
+
+        controller.sendMessage(request, principal);
+
+        verify(messageService).sendMessage(specificId, USER_ID, CONTENT);
+    }
+
+    @Test
+    void givenValidRequest_whenSendMessage_thenMessagePublishedToConversationTopic() {
+        SendMessageRequest request = new SendMessageRequest(CONVERSATION_ID, CONTENT);
+
+        when(messageService.sendMessage(CONVERSATION_ID, USER_ID, CONTENT))
+                .thenReturn(message);
 
         controller.sendMessage(request, principal);
 
         verify(messagingTemplate).convertAndSend(
-                eq("/topic/conversation/00000000-0000-0000-0000-000000000001"),
-                any(MessageEntity.class)
+                "/topic/conversations/" + CONVERSATION_ID + "/messages",
+                message
         );
     }
 }

@@ -3,6 +3,8 @@ package messagingApp.infrastructure.MessageEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import messagingApp.infrastructure.Conversation;
+import messagingApp.infrastructure.User;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,11 +21,13 @@ public abstract class MessageEntity {
     @Id
     private UUID id;
 
-    @Column(name = "conversationid", nullable=false)
-    private UUID conversationId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversationid", nullable = false)
+    private Conversation conversation;
 
-    @Column(name = "senderid", nullable=false)
-    private String sender;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;

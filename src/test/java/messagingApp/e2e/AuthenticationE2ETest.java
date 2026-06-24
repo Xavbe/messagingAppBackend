@@ -52,7 +52,7 @@ class AuthenticationE2ETest {
     void register_persistsUserInDB_andReturnsCookie() {
         ResponseEntity<String> response = restTemplate.postForEntity(
                 "/register",
-                jsonBody("alice", "password123"),
+                jsonBody("alice", "alice@example.com", "password123"),
                 String.class
         );
 
@@ -65,13 +65,13 @@ class AuthenticationE2ETest {
         assertThat(userRepository.findByUsername("alice")).isPresent();
     }
 
-    private HttpEntity<String> jsonBody(String username, String password) {
+    private HttpEntity<String> jsonBody(String username, String email, String password) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return new HttpEntity<>(
                 """
-                {"username": "%s", "password": "%s"}
-                """.formatted(username, password),
+                {"username": "%s", "email": "%s", "password": "%s"}
+                """.formatted(username, email, password),
                 headers
         );
     }
