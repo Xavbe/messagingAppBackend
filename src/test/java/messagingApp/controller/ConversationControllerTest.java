@@ -2,6 +2,8 @@ package messagingApp.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import messagingApp.controller.conversation.ConversationController;
+import messagingApp.controller.conversation.CreateConversationRequest;
 import messagingApp.domain.Conversation.ConversationService;
 import messagingApp.infrastructure.Conversation;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +37,10 @@ class ConversationControllerTest {
     private ConversationController conversationController;
 
     private static final String ANY_USERNAME = "ALICE";
+    private static final List<String> LIST_OF_USERNAMES = List.of("BOB", "Nathan");
+    private static final String ANY_CONVERSATION_NAME = "NOM";
     private static final String ATTRIBUTE_FOR_USERNAME = "user";
+
     private static final List<Conversation> EXPECTED_CONVERSATION = List.of(new Conversation(), new Conversation());
 
     @BeforeEach
@@ -83,12 +89,33 @@ class ConversationControllerTest {
 
 
     @Test
-    void getConversations_shouldReturnEmptyList_whenUserHasNoConversations() {
+    void givenConversations_whenUserHasNoConversations_thenShouldReturnEmptyList() {
         when(session.getAttribute(ATTRIBUTE_FOR_USERNAME)).thenReturn(ANY_USERNAME);
         when(conversationService.findByUsername(ANY_USERNAME)).thenReturn(List.of());
 
         ResponseEntity<List<Conversation>> response = conversationController.getConversations(request);
 
         assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void givenNoSessionUser_whenCreateConversation_thenReturns401() {
+        when(session.getAttribute("user")).thenReturn(null);
+        CreateConversationRequest body = new CreateConversationRequest(ANY_CONVERSATION_NAME, List.of("bob"));
+
+        ResponseEntity<Conversation> response = conversationController.createConversation(body, request);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verifyNoInteractions(conversationService);
+    }
+
+    @Test
+    void givenSessionUser_whenCreateConversation_thenServiceCalledWithCurrentUserAndUsernames() {
+        when(session.getAttribute("user")).thenReturn(ANY_USERNAME);
+        CreateConversationRequest body = new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
+
+        ResponseEntity<Conversation> response = conversationController.createConversation(body, request);
+
+        verify(conversationService).createConversation(ANY_CONVERSATION_NAME, ANY_USERNAME, LIST_OF_USERNAMES);
     }
 }

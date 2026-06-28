@@ -1,9 +1,13 @@
 package messagingApp.domain.Conversation;
 
+import messagingApp.domain.authentication.UserService;
 import messagingApp.infrastructure.Conversation;
+import messagingApp.infrastructure.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +16,8 @@ public class ConversationService {
 
     @Autowired
     private ConversationRepository conversationRepository;
+    @Autowired
+    private UserService userService;
 
     public List<Conversation> findByUsername (String username) {
         return conversationRepository.getAllConversationsforUsername(username);
@@ -20,5 +26,23 @@ public class ConversationService {
     public Conversation getConversationById(UUID conversationId) {
         return conversationRepository.findById(conversationId).orElseThrow(() ->
                         new ConversationNotFoundException(conversationId));
+    }
+
+
+    public Conversation createConversation(String ConversationName, String currentUsername, List<String> usernames) {
+        ArrayList<User> participants = new ArrayList<>();
+
+        User creator = userService.findByUsername(currentUsername);
+        participants.add(creator);
+
+        for (String username : usernames) {
+            User user = userService.findByUsername(username);
+            if (!participants.contains(user)) {
+                participants.add(user);
+            }
+        }
+
+        Conversation conversation = new Conversation(participants, LocalDateTime.now());
+        return conversationRepository.save(conversation);
     }
 }
