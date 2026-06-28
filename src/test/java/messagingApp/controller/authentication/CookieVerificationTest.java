@@ -23,24 +23,13 @@ class CookieVerificationTest {
     private final static Cookie COOKIE_WITH_GOOD_TOKEN = new Cookie("session", "good-token");
     private final static String GOOD_TOKEN = "good-token";
     private final static String BAD_TOKEN = "bad-token";
-    private final static String ANY_USERNAME = "John Doe";
+    private final static Long ANY_USER_ID = 99L;
 
-
-
-    @Mock
-    private JwtAuthentificationSecurity jwtService;
-
-    @Mock
-    private HttpServletRequest request;
-
-    @Mock
-    private HttpServletResponse response;
-
-    @Mock
-    private FilterChain chain;
-
-    @InjectMocks
-    private CookieVerification filter;
+    @Mock private JwtAuthentificationSecurity jwtService;
+    @Mock private HttpServletRequest request;
+    @Mock private HttpServletResponse response;
+    @Mock private FilterChain chain;
+    @InjectMocks private CookieVerification filter;
 
     @BeforeEach
     void clearSecurityContext() {
@@ -50,27 +39,21 @@ class CookieVerificationTest {
     @Test
     void whenNoCookies_thenNoAuth() throws Exception {
         when(request.getCookies()).thenReturn(null);
-
         filter.doFilterInternal(request, response, chain);
-
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
     @Test
     void whenNoCookies_thenVerifyChainFilters() throws Exception {
         when(request.getCookies()).thenReturn(null);
-
         filter.doFilterInternal(request, response, chain);
-
         verify(chain).doFilter(request, response);
     }
 
     @Test
     void whenNoAuthentificationSessionInCookie_thenNoAuth() throws Exception {
         when(request.getCookies()).thenReturn(new Cookie[]{COOKIE_WITHOUT_AUTHENTICATION});
-
         filter.doFilterInternal(request, response, chain);
-
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
@@ -78,9 +61,7 @@ class CookieVerificationTest {
     void whenSessionCookieContainsInvalidToken_thenNoAuth() throws Exception {
         when(request.getCookies()).thenReturn(new Cookie[]{COOKIE_WITH_BAD_TOKEN});
         when(jwtService.isValid(BAD_TOKEN)).thenReturn(false);
-
         filter.doFilterInternal(request, response, chain);
-
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
@@ -88,20 +69,18 @@ class CookieVerificationTest {
     void whenValidToken_thenAuthSetInSecurityContext() throws Exception {
         when(request.getCookies()).thenReturn(new Cookie[]{COOKIE_WITH_GOOD_TOKEN});
         when(jwtService.isValid(GOOD_TOKEN)).thenReturn(true);
-        when(jwtService.extractUsername(GOOD_TOKEN)).thenReturn(ANY_USERNAME);
+        when(jwtService.extractUserId(GOOD_TOKEN)).thenReturn(ANY_USER_ID);
 
         filter.doFilterInternal(request, response, chain);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        assertThat(auth.getPrincipal()).isEqualTo(ANY_USERNAME);
+        assertThat(auth.getPrincipal()).isEqualTo(ANY_USER_ID);
     }
 
     @Test
     void chainIsAlwaysCalled() throws Exception {
         when(request.getCookies()).thenReturn(null);
-
         filter.doFilterInternal(request, response, chain);
-
         verify(chain, times(1)).doFilter(request, response);
     }
 }

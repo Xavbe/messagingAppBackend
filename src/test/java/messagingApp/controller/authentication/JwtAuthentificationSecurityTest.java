@@ -9,39 +9,34 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtAuthentificationSecurityTest {
 
     private JwtAuthentificationSecurity jwtService;
-    private static final String ANY_USERNAME = "John Doe";
-    private static final String FAKE_TOLKEN = "123";
+    private static final Long ANY_USER_ID = 42L;
+    private static final String FAKE_TOKEN = "123";
 
     @BeforeEach
     void setUp() {
         jwtService = new JwtAuthentificationSecurity();
-
-        ReflectionTestUtils.setField(
-                jwtService,
-                "SECRET_KEY",
-                "12345678901234567890123456789012"
-        );
+        ReflectionTestUtils.setField(jwtService, "SECRET_KEY", "12345678901234567890123456789012");
     }
 
     @Test
     void whenGenerateToken_ReturnsValidToken() {
-        String token = jwtService.generateToken(ANY_USERNAME);
+        String token = jwtService.generateToken(ANY_USER_ID);
 
         assertNotNull(token);
         assertTrue(jwtService.isValid(token));
     }
 
     @Test
-    void givenGoodGeneratedToken_whenExtractUsername_ReturnsCorrectUsername() {
-        String token = jwtService.generateToken(ANY_USERNAME);
+    void givenGoodGeneratedToken_whenExtractUserId_ReturnsCorrectId() {
+        String token = jwtService.generateToken(ANY_USER_ID);
 
-        String username = jwtService.extractUsername(token);
+        Long userId = jwtService.extractUserId(token);
 
-        assertEquals(ANY_USERNAME, username);
+        assertEquals(ANY_USER_ID, userId);
     }
 
     @Test
     void givenInvalidToken_whenIsValid_thenReturnsFalse() {
-        assertFalse(jwtService.isValid(FAKE_TOLKEN));
+        assertFalse(jwtService.isValid(FAKE_TOKEN));
     }
 }

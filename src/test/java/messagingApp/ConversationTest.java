@@ -1,36 +1,50 @@
 package messagingApp;
 
 import messagingApp.infrastructure.Conversation;
+import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConversationTest {
 
     private Conversation emptyConversation;
+
+    private User user;
+
+    private ArrayList<User> users;
+
     private final static String USERNAME = "Patrice";
-    private final static ArrayList<String> USERNAMES = new ArrayList<>();
-    LocalDateTime LOCALDATETIME = LocalDateTime.now();
+    private final static String PASSWORD = "password";
 
     @BeforeEach
     void createConversation() {
-        emptyConversation = new Conversation(USERNAMES,LOCALDATETIME);
+
+        users = new ArrayList<>();
+
+        user = new User(USERNAME, PASSWORD);
+
+        emptyConversation = new Conversation(users, LocalDateTime.now());
     }
 
     @Test
-    void whenConversationIsCreated_UserIsEmpty() {
-        assertEquals(0, emptyConversation.getUsernames().size());
+    void whenConversationIsCreated_UserListIsEmpty() {
+
+        assertEquals(0, emptyConversation.getUsers().size());
     }
 
     @Test
-    void whenAddingNewUUIDMemberToConversation_ListeAsANewMember() {
-        emptyConversation.addMember(USERNAME);
+    void whenAddingNewMemberToConversation_ListHasNewMember() {
 
-        assertEquals(1, emptyConversation.getUsernames().size());
+        emptyConversation.addMember(user);
 
+        assertEquals(1, emptyConversation.getUsers().size());
+
+        assertEquals(USERNAME,
+                emptyConversation.getUsers().get(0).getUsername());
     }
 }
