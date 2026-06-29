@@ -2,12 +2,14 @@ package messagingApp.controller.authentication;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class JwtAuthentificationSecurity {
@@ -47,6 +49,20 @@ public class JwtAuthentificationSecurity {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public Optional<Long> extractUserIdFromCookies(Cookie[] cookies) {
+        if (cookies == null) {
+            return Optional.empty();
+        }
+
+        for (Cookie cookie : cookies) {
+            if ("session".equals(cookie.getName()) && isValid(cookie.getValue())) {
+                return Optional.of(extractUserId(cookie.getValue()));
+            }
+        }
+
+        return Optional.empty();
     }
 
 }

@@ -20,35 +20,38 @@ public class ConversationController {
     @Autowired
     private ConversationService conversationService;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/conversations")
     public ResponseEntity<List<Conversation>> getConversations(HttpServletRequest request) {
-        if (getCurrentUsername(request) == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        return ResponseEntity.ok(
-                conversationService.findByUsername(getCurrentUsername(request)));
+        String username = userService.findUserbyId(userId).getUsername();
+        return ResponseEntity.ok(conversationService.findByUsername(username));
     }
 
     @PostMapping("/conversations")
-    public ResponseEntity<Conversation> createConversation( @RequestBody CreateConversationRequest body,
-                                                            HttpServletRequest request) {
-        if (getCurrentUsername(request) == null) {
+    public ResponseEntity<Conversation> createConversation(
+            @RequestBody CreateConversationRequest body,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        Conversation conversation = conversationService.createConversation(body.conversationName(),
-                getCurrentUsername(request), body.usernames());
+        String currentUsername = userService.findUserbyId(userId).getUsername();
+
+        Conversation conversation = conversationService.createConversation(
+                body.conversationName(),
+                currentUsername,
+                body.usernames()
+        );
+
         return new ResponseEntity<>(conversation, HttpStatus.CREATED);
-    }
-
-
-    private String getCurrentUsername(HttpServletRequest request) {
-        try {
-            return request.getSession().getAttribute("user").toString();
-
-        } catch (NullPointerException e) {
-            return null;
-        }
     }
 }

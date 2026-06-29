@@ -1,12 +1,12 @@
 package messagingApp.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import messagingApp.controller.conversation.ConversationController;
 import messagingApp.controller.conversation.CreateConversationRequest;
 import messagingApp.domain.Conversation.ConversationService;
+import messagingApp.domain.authentication.UserService;
 import messagingApp.infrastructure.Conversation;
-import org.junit.jupiter.api.BeforeEach;
+import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,94 +28,141 @@ class ConversationControllerTest {
     private ConversationService conversationService;
 
     @Mock
-    private HttpServletRequest request;
+    private UserService userService;
 
     @Mock
-    private HttpSession session;
+    private HttpServletRequest request;
 
     @InjectMocks
     private ConversationController conversationController;
 
+    private static final Long ANY_USER_ID = 1L;
     private static final String ANY_USERNAME = "ALICE";
     private static final List<String> LIST_OF_USERNAMES = List.of("BOB", "Nathan");
     private static final String ANY_CONVERSATION_NAME = "NOM";
-    private static final String ATTRIBUTE_FOR_USERNAME = "user";
 
-    private static final List<Conversation> EXPECTED_CONVERSATION = List.of(new Conversation(), new Conversation());
+    private static final List<Conversation> EXPECTED_CONVERSATION =
+            List.of(new Conversation(), new Conversation());
 
-    @BeforeEach
-    void createMocks() {
-        when(request.getSession()).thenReturn(session);
+    private User createUser() {
+        User user = new User();
+        user.setUsername(ANY_USERNAME);
+        return user;
     }
 
     @Test
-    void givenUsernameNull_whenGetConversations_thenUnauthorized() {
-        when(session.getAttribute(ATTRIBUTE_FOR_USERNAME)).thenReturn(null);
+    void givenUserIdNull_whenGetConversations_thenUnauthorized() {
+        when(request.getAttribute("userId")).thenReturn(null);
 
-        ResponseEntity<List<Conversation>> response = conversationController.getConversations(request);
+        ResponseEntity<List<Conversation>> response =
+                conversationController.getConversations(request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void givenUsername_whenGetConversations_thenResponseOk() {
-        when(session.getAttribute(ATTRIBUTE_FOR_USERNAME)).thenReturn(ANY_USERNAME);
-        when(conversationService.findByUsername(ANY_USERNAME)).thenReturn(EXPECTED_CONVERSATION);
+    void givenUserId_whenGetConversations_thenResponseOk() {
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.findByUsername(ANY_USERNAME))
+                .thenReturn(EXPECTED_CONVERSATION);
 
-        ResponseEntity<List<Conversation>> response = conversationController.getConversations(request);
+        ResponseEntity<List<Conversation>> response =
+                conversationController.getConversations(request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
-    void givenUsername_whenGetConversations_thenResponseIsExpectedConversation(){
-        when(session.getAttribute(ATTRIBUTE_FOR_USERNAME)).thenReturn(ANY_USERNAME);
-        when(conversationService.findByUsername(ANY_USERNAME)).thenReturn(EXPECTED_CONVERSATION);
+    void givenUserId_whenGetConversations_thenReturnsExpectedConversation() {
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.findByUsername(ANY_USERNAME))
+                .thenReturn(EXPECTED_CONVERSATION);
 
-        ResponseEntity<List<Conversation>> response = conversationController.getConversations(request);
+        ResponseEntity<List<Conversation>> response =
+                conversationController.getConversations(request);
 
         assertThat(response.getBody()).isEqualTo(EXPECTED_CONVERSATION);
     }
 
     @Test
-    void givenUsername_whenGetConversations_thenResponseIsExpectedAnyUsername(){
-        when(session.getAttribute(ATTRIBUTE_FOR_USERNAME)).thenReturn(ANY_USERNAME);
-        when(conversationService.findByUsername(ANY_USERNAME)).thenReturn(EXPECTED_CONVERSATION);
+    void givenUserId_whenGetConversations_thenServiceCalledWithUsername() {
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.findByUsername(ANY_USERNAME))
+                .thenReturn(EXPECTED_CONVERSATION);
 
-        ResponseEntity<List<Conversation>> response = conversationController.getConversations(request);
+        conversationController.getConversations(request);
 
         verify(conversationService).findByUsername(ANY_USERNAME);
     }
 
-
     @Test
-    void givenConversations_whenUserHasNoConversations_thenShouldReturnEmptyList() {
-        when(session.getAttribute(ATTRIBUTE_FOR_USERNAME)).thenReturn(ANY_USERNAME);
-        when(conversationService.findByUsername(ANY_USERNAME)).thenReturn(List.of());
+    void givenNoConversation_whenGetConversations_thenReturnsEmptyList() {
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.findByUsername(ANY_USERNAME))
+                .thenReturn(List.of());
 
-        ResponseEntity<List<Conversation>> response = conversationController.getConversations(request);
+        ResponseEntity<List<Conversation>> response =
+                conversationController.getConversations(request);
 
         assertThat(response.getBody()).isEmpty();
     }
 
     @Test
-    void givenNoSessionUser_whenCreateConversation_thenReturns401() {
-        when(session.getAttribute("user")).thenReturn(null);
-        CreateConversationRequest body = new CreateConversationRequest(ANY_CONVERSATION_NAME, List.of("bob"));
+    void givenNoUserId_whenCreateConversation_thenReturns401() {
+        when(request.getAttribute("userId")).thenReturn(null);
 
-        ResponseEntity<Conversation> response = conversationController.createConversation(body, request);
+        CreateConversationRequest body =
+                new CreateConversationRequest(ANY_CONVERSATION_NAME, List.of("bob"));
+
+        ResponseEntity<Conversation> response =
+                conversationController.createConversation(body, request);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+
         verifyNoInteractions(conversationService);
+        verifyNoInteractions(userService);
     }
 
     @Test
-    void givenSessionUser_whenCreateConversation_thenServiceCalledWithCurrentUserAndUsernames() {
-        when(session.getAttribute("user")).thenReturn(ANY_USERNAME);
-        CreateConversationRequest body = new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
+    void givenUserId_whenCreateConversation_thenServiceCalled() {
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
 
-        ResponseEntity<Conversation> response = conversationController.createConversation(body, request);
+        CreateConversationRequest body =
+                new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
 
-        verify(conversationService).createConversation(ANY_CONVERSATION_NAME, ANY_USERNAME, LIST_OF_USERNAMES);
+        conversationController.createConversation(body, request);
+
+        verify(conversationService).createConversation(
+                ANY_CONVERSATION_NAME,
+                ANY_USERNAME,
+                LIST_OF_USERNAMES
+        );
+    }
+
+    @Test
+    void givenUserId_whenCreateConversation_thenReturnsCreated() {
+        Conversation conversation = new Conversation();
+
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.createConversation(
+                ANY_CONVERSATION_NAME,
+                ANY_USERNAME,
+                LIST_OF_USERNAMES))
+                .thenReturn(conversation);
+
+        CreateConversationRequest body =
+                new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
+
+        ResponseEntity<Conversation> response =
+                conversationController.createConversation(body, request);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertThat(response.getBody()).isEqualTo(conversation);
     }
 }
