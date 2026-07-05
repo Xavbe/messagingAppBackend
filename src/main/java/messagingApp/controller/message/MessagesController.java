@@ -12,10 +12,7 @@ import java.util.UUID;
 @RequestMapping("/conversations/{conversationId}/messages")
 public class MessagesController {
 
-    @Autowired
     private MessageService messageService;
-
-    @Autowired
     private MessageMapper messageMapper;
 
     public MessagesController(MessageService messageService, MessageMapper messageMapper) {
@@ -24,15 +21,19 @@ public class MessagesController {
     }
 
     @GetMapping
-    public ResponseEntity<MessagesResponse> getMessages(@PathVariable("conversationId") String conversationId,
-                                                              @RequestParam String messageBeforeUUID,
-                                                              @RequestParam(defaultValue="30") int limit) {
+    public ResponseEntity<MessagesResponse> getMessages(
+            @PathVariable("conversationId") String conversationId,
+            @RequestParam(required = false) String messageBeforeUUID,
+            @RequestParam(defaultValue = "30") int limit) {
         try {
+            UUID beforeId = messageBeforeUUID != null ? UUID.fromString(messageBeforeUUID) : null;
+
             MessagesResponse response = messageMapper.getSendMessagesFormat(
-                    messageService.getMessage(UUID.fromString(conversationId),
-                            UUID.fromString(messageBeforeUUID), limit));
+                    messageService.getMessage(UUID.fromString(conversationId), beforeId, limit));
+
             return ResponseEntity.ok(response);
-        } catch (Exception e){
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

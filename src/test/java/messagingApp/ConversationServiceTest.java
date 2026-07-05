@@ -38,6 +38,7 @@ class ConversationServiceTest {
     private User other;
     private static final String ANY_USERNAME = "Martin";
     private static final String ANY_CONVERSATION_NAME = "Conversation";
+    private static final Long ANY_USER_ID = 123L;
 
     @BeforeEach
     void setUp() {
@@ -48,9 +49,12 @@ class ConversationServiceTest {
 
     @Test
     void whenFindByUserName_thenRepositoryGetsAllConversations() {
+        when(userService.findByUsername(ANY_USERNAME)).thenReturn(creator);
+        when(creator.getId()).thenReturn(ANY_USER_ID);
+
         conversationService.findByUsername(ANY_USERNAME);
 
-        verify(conversationRepository).getAllConversationsforUsername(ANY_USERNAME);
+        verify(conversationRepository).getAllConversationsForUserId(ANY_USER_ID);
     }
 
     @Test

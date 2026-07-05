@@ -20,7 +20,8 @@ public class ConversationService {
     private UserService userService;
 
     public List<Conversation> findByUsername (String username) {
-        return conversationRepository.getAllConversationsforUsername(username);
+        User user = userService.findByUsername(username);
+        return conversationRepository.getAllConversationsForUserId(user.getId());
     }
 
     public Conversation getConversationById(UUID conversationId) {
@@ -42,7 +43,12 @@ public class ConversationService {
             }
         }
 
-        Conversation conversation = new Conversation(participants, LocalDateTime.now());
+        Conversation conversation = new Conversation(ConversationName, participants, LocalDateTime.now());
         return conversationRepository.save(conversation);
+    }
+
+    public Conversation getConversationWithUserAndName(long userId, String conversationName) {
+        return conversationRepository.getConversationByNameAndContainingUser(conversationName, userId)
+                .orElseThrow(() -> new ConversationNotFoundException(conversationName));
     }
 }

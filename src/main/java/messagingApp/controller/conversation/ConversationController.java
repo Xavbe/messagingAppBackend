@@ -24,14 +24,19 @@ public class ConversationController {
     private UserService userService;
 
     @GetMapping("/conversations")
-    public ResponseEntity<List<Conversation>> getConversations(HttpServletRequest request) {
+    public ResponseEntity<List<ConversationResponse>> getConversations(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         String username = userService.findUserbyId(userId).getUsername();
-        return ResponseEntity.ok(conversationService.findByUsername(username));
+        List<ConversationResponse> conversations = conversationService.findByUsername(username)
+                .stream()
+                .map(ConversationResponse::from)
+                .toList();
+        return ResponseEntity.ok(conversations);
+
     }
 
     @PostMapping("/conversations")

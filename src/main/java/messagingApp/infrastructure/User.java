@@ -10,6 +10,7 @@ import lombok.Setter;
 @Table(name = "users")
 public class User {
 
+    //todo: change UserId to a class UserId for more easy modification
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

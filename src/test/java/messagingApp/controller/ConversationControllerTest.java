@@ -2,6 +2,7 @@ package messagingApp.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import messagingApp.controller.conversation.ConversationController;
+import messagingApp.controller.conversation.ConversationResponse;
 import messagingApp.controller.conversation.CreateConversationRequest;
 import messagingApp.domain.Conversation.ConversationService;
 import messagingApp.domain.authentication.UserService;
@@ -15,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,9 +43,19 @@ class ConversationControllerTest {
     private static final String ANY_USERNAME = "ALICE";
     private static final List<String> LIST_OF_USERNAMES = List.of("BOB", "Nathan");
     private static final String ANY_CONVERSATION_NAME = "NOM";
+    private static final LocalDateTime FIXED_TIME = LocalDateTime.of(2026, 1, 1, 12, 0);
 
-    private static final List<Conversation> EXPECTED_CONVERSATION =
-            List.of(new Conversation(), new Conversation());
+    private static final ArrayList<User> LIST_OF_USERS = new ArrayList<>(List.of(
+            new User(ANY_USERNAME, "ASOPDASPOD")
+    ));
+
+    private static final Conversation CONVERSATION_ONE =
+            new Conversation("name", LIST_OF_USERS, FIXED_TIME);
+
+    private static final List<Conversation> EXPECTED_CONVERSATION = List.of(CONVERSATION_ONE);
+
+    private static final List<ConversationResponse> CONVERSATION_RESPONSES =
+            List.of(ConversationResponse.from(CONVERSATION_ONE));
 
     private User createUser() {
         User user = new User();
@@ -54,7 +67,7 @@ class ConversationControllerTest {
     void givenUserIdNull_whenGetConversations_thenUnauthorized() {
         when(request.getAttribute("userId")).thenReturn(null);
 
-        ResponseEntity<List<Conversation>> response =
+        ResponseEntity<List<ConversationResponse>> response =
                 conversationController.getConversations(request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -67,7 +80,7 @@ class ConversationControllerTest {
         when(conversationService.findByUsername(ANY_USERNAME))
                 .thenReturn(EXPECTED_CONVERSATION);
 
-        ResponseEntity<List<Conversation>> response =
+        ResponseEntity<List<ConversationResponse>> response =
                 conversationController.getConversations(request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -80,10 +93,10 @@ class ConversationControllerTest {
         when(conversationService.findByUsername(ANY_USERNAME))
                 .thenReturn(EXPECTED_CONVERSATION);
 
-        ResponseEntity<List<Conversation>> response =
+        ResponseEntity<List<ConversationResponse>> response =
                 conversationController.getConversations(request);
 
-        assertThat(response.getBody()).isEqualTo(EXPECTED_CONVERSATION);
+        assertThat(response.getBody()).isEqualTo(CONVERSATION_RESPONSES);
     }
 
     @Test
@@ -105,7 +118,7 @@ class ConversationControllerTest {
         when(conversationService.findByUsername(ANY_USERNAME))
                 .thenReturn(List.of());
 
-        ResponseEntity<List<Conversation>> response =
+        ResponseEntity<List<ConversationResponse>> response =
                 conversationController.getConversations(request);
 
         assertThat(response.getBody()).isEmpty();

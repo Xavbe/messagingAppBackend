@@ -20,6 +20,7 @@ class ConversationTest {
 
     private final static String USERNAME = "Patrice";
     private final static String PASSWORD = "password";
+    private final static String CONVERSATION_NAME = "Chat";
 
     @BeforeEach
     void createConversation() {
@@ -28,7 +29,7 @@ class ConversationTest {
 
         user = new User(USERNAME, PASSWORD);
 
-        emptyConversation = new Conversation(users, LocalDateTime.now());
+        emptyConversation = new Conversation(CONVERSATION_NAME, users, LocalDateTime.now());
     }
 
     @Test
