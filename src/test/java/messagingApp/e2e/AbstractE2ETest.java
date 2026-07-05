@@ -118,6 +118,6 @@ abstract class AbstractE2ETest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        return (String) response.getBody().get("id");
+        return response.getBody().get("conversationId").toString();
     }
 }
