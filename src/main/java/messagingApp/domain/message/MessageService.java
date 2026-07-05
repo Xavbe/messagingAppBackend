@@ -50,7 +50,6 @@ public class MessageService {
 
         MessageEntity saved = messageRepository.save(message);
 
-        // Le mapping se fait ICI, pendant que la session Hibernate est encore active
         return messageMapper.getSendMessageFormat(saved);
     }
 }
