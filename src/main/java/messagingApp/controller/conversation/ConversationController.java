@@ -2,6 +2,7 @@ package messagingApp.controller.conversation;
 
 import jakarta.servlet.http.HttpServletRequest;
 import messagingApp.domain.authentication.UserService;
+import messagingApp.domain.authentication.UsernameNotFoundException;
 import messagingApp.infrastructure.Conversation;
 import messagingApp.domain.Conversation.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class ConversationController {
     }
 
     @PostMapping("/conversations")
-    public ResponseEntity<Conversation> createConversation(
+    public ResponseEntity<?> createConversation(
             @RequestBody CreateConversationRequest body,
             HttpServletRequest request) {
 
@@ -51,12 +52,12 @@ public class ConversationController {
 
         String currentUsername = userService.findUserbyId(userId).getUsername();
 
-        Conversation conversation = conversationService.createConversation(
-                body.conversationName(),
-                currentUsername,
-                body.usernames()
-        );
-
-        return new ResponseEntity<>(conversation, HttpStatus.CREATED);
+        try {
+            Conversation conversation = conversationService.createConversation(
+                    body.conversationName(), currentUsername, body.usernames());
+            return new ResponseEntity<>(ConversationResponse.from(conversation), HttpStatus.CREATED);
+        } catch (UsernameNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }

@@ -6,6 +6,7 @@ import messagingApp.controller.conversation.ConversationResponse;
 import messagingApp.controller.conversation.CreateConversationRequest;
 import messagingApp.domain.Conversation.ConversationService;
 import messagingApp.domain.authentication.UserService;
+import messagingApp.domain.authentication.UsernameNotFoundException;
 import messagingApp.infrastructure.Conversation;
 import messagingApp.infrastructure.User;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,8 @@ class ConversationControllerTest {
         user.setUsername(ANY_USERNAME);
         return user;
     }
+
+    // --- getConversations ---
 
     @Test
     void givenUserIdNull_whenGetConversations_thenUnauthorized() {
@@ -124,6 +127,8 @@ class ConversationControllerTest {
         assertThat(response.getBody()).isEmpty();
     }
 
+    // --- createConversation ---
+
     @Test
     void givenNoUserId_whenCreateConversation_thenReturns401() {
         when(request.getAttribute("userId")).thenReturn(null);
@@ -131,7 +136,7 @@ class ConversationControllerTest {
         CreateConversationRequest body =
                 new CreateConversationRequest(ANY_CONVERSATION_NAME, List.of("bob"));
 
-        ResponseEntity<Conversation> response =
+        ResponseEntity<?> response =
                 conversationController.createConversation(body, request);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -144,6 +149,8 @@ class ConversationControllerTest {
     void givenUserId_whenCreateConversation_thenServiceCalled() {
         when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
         when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.createConversation(ANY_CONVERSATION_NAME, ANY_USERNAME,
+                LIST_OF_USERNAMES)).thenReturn(CONVERSATION_ONE);
 
         CreateConversationRequest body =
                 new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
@@ -159,23 +166,40 @@ class ConversationControllerTest {
 
     @Test
     void givenUserId_whenCreateConversation_thenReturnsCreated() {
-        Conversation conversation = new Conversation();
-
         when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
         when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
         when(conversationService.createConversation(
                 ANY_CONVERSATION_NAME,
                 ANY_USERNAME,
                 LIST_OF_USERNAMES))
-                .thenReturn(conversation);
+                .thenReturn(CONVERSATION_ONE);
 
         CreateConversationRequest body =
                 new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
 
-        ResponseEntity<Conversation> response =
+        ResponseEntity<?> response =
                 conversationController.createConversation(body, request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertThat(response.getBody()).isEqualTo(conversation);
+        assertThat(response.getBody()).isEqualTo(ConversationResponse.from(CONVERSATION_ONE));
+    }
+
+    @Test
+    void givenUnknownUsername_whenCreateConversation_thenReturns400() {
+        when(request.getAttribute("userId")).thenReturn(ANY_USER_ID);
+        when(userService.findUserbyId(ANY_USER_ID)).thenReturn(createUser());
+        when(conversationService.createConversation(
+                ANY_CONVERSATION_NAME,
+                ANY_USERNAME,
+                LIST_OF_USERNAMES))
+                .thenThrow(new UsernameNotFoundException("ghost"));
+
+        CreateConversationRequest body =
+                new CreateConversationRequest(ANY_CONVERSATION_NAME, LIST_OF_USERNAMES);
+
+        ResponseEntity<?> response =
+                conversationController.createConversation(body, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }

@@ -51,4 +51,10 @@ public class ConversationService {
         return conversationRepository.getConversationByNameAndContainingUser(conversationName, userId)
                 .orElseThrow(() -> new ConversationNotFoundException(conversationName));
     }
+
+    public boolean isMember(UUID conversationId, Long userId) {
+        Conversation conversation = getConversationById(conversationId);
+        return conversation.getUsers().stream()
+                .anyMatch(u -> u.getId().equals(userId));
+    }
 }
