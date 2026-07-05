@@ -49,11 +49,12 @@ public class CookieVerification extends OncePerRequestFilter {
                 .orElse(null);
     }
 
-    private void createAccesAuthentification(String token){
-        String username = jwtService.extractUsername(token);
+    private void createAccesAuthentification(String token) {
+
+        Long userId = jwtService.extractUserId(token);
 
         UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(username, null, List.of());
+                new UsernamePasswordAuthenticationToken(userId, null, List.of());
 
         SecurityContextHolder.getContext().setAuthentication(auth);
     }

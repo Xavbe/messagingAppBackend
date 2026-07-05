@@ -39,7 +39,7 @@ class SecurityConfigTest {
                 """);
     private final static RequestBuilder registerRequest =post("/register").contentType(MediaType.APPLICATION_JSON)
             .content("""
-                  {"username": "test", "password": "test"}
+                  {"username": "test", "email": "test@example.com", "password": "test"}
                 """);
 
 
@@ -64,11 +64,10 @@ class SecurityConfigTest {
     @Test
     void whenMessagePerformedWithCorrectToken_thenReturnNotFound() throws Exception {
         when(jwtService.isValid(any())).thenReturn(true);
-        when(jwtService.extractUsername(any())).thenReturn("testUser");
+        when(jwtService.extractUserId(any())).thenReturn(1L);
 
         webRequestSimulator.perform(get("/messages")
                         .cookie(new Cookie("session", "valid-jwt")))
                 .andExpect(status().isNotFound());
     }
-
 }

@@ -14,4 +14,7 @@ public class TextMessageEntity extends MessageEntity {
     public String getContent(){
         return content;
     }
+    public void setContent(String content){
+        this.content = content;
+    }
 }

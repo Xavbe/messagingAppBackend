@@ -1,52 +1,52 @@
 package messagingApp.infrastructure;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 public class Conversation {
+    @Getter
     @Id
     private UUID id;
+    private String name;
 
-    @ElementCollection
-    private ArrayList<String> usernames;
+    @Getter
+    @ManyToMany
+    @JoinTable(
+            name = "conversation_users",
+            joinColumns = @JoinColumn(name = "conversation_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> users = new ArrayList<>();
 
+    @Getter
     private LocalDateTime lastMessageAt;
 
-    public Conversation(ArrayList<String> usernames, LocalDateTime lastMessageAt) {
+    public Conversation(String conversationName, ArrayList<User> users, LocalDateTime lastMessageAt) {
         id = UUID.randomUUID();
-        this.usernames = usernames;
-        this.lastMessageAt = LocalDateTime.now();
+        this.users = users;
+        this.lastMessageAt = lastMessageAt;
+        this.name = conversationName;
     }
 
     public Conversation() {
     }
 
-    public void addMember(String username) {
-        usernames.add(username);
+    public void addMember(User user) {
+        users.add(user);
     }
 
-    public void removeMember(String username) {
-        usernames.remove(username);
+    public void removeMember(User user) {
+        users.remove(user);
     }
 
-    public ArrayList<String> getUsernames(){
-        return usernames;
+    public String getName(){
+        return name;
     }
 
-    public LocalDateTime getLastMessageAt(){
-        return lastMessageAt;
-    }
-    public void setLastMessageAt(LocalDateTime lastMessageAt){
-        this.lastMessageAt = lastMessageAt;
-    }
-
-    public UUID getId(){
-        return id;
-    }
 }

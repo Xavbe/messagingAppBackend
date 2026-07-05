@@ -21,8 +21,8 @@ public class MessageMapper {
 
     private MessageResponse getMessageToSendFormat(MessageEntity message) {
         return new MessageResponse (message.getId(),getContent(message), getType(message),
-                message.getSenderId(),
-                message.getTimeStamp());
+                message.getSender().getUsername(),
+                message.getTimestamp());
     }
 
     private String getType(MessageEntity message) {
@@ -33,7 +33,10 @@ public class MessageMapper {
     }
 
     private String getLastMessagesId(List<MessageEntity> messages) {
-        return  messages.getLast().getId().toString();
+        if (messages.isEmpty()) {
+            return null;
+        }
+        return messages.getLast().getId().toString();
     }
 
     private String getContent(MessageEntity message) {
@@ -49,5 +52,15 @@ public class MessageMapper {
         } else  {
             return "FALSE";
         }
+    }
+
+    public MessageResponse getSendMessageFormat(MessageEntity message) {
+        return new MessageResponse(
+                message.getId(),
+                getContent(message),
+                getType(message),
+                message.getSender().getUsername(),
+                message.getTimestamp()
+        );
     }
 }

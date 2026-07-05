@@ -1,47 +1,60 @@
 package messagingApp.controller.authentication;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtAuthentificationSecurityTest {
 
-    private JwtAuthentificationSecurity jwtService;
-    private static final String ANY_USERNAME = "John Doe";
-    private static final String FAKE_TOLKEN = "123";
+    private final JwtAuthentificationSecurity jwt = new JwtAuthentificationSecurity();
 
     @BeforeEach
-    void setUp() {
-        jwtService = new JwtAuthentificationSecurity();
-
+    void setup() {
         ReflectionTestUtils.setField(
-                jwtService,
+                jwt,
                 "SECRET_KEY",
-                "12345678901234567890123456789012"
+                "0123456789012345678901234567890123456789012345678901234567890123"
         );
     }
 
     @Test
-    void whenGenerateToken_ReturnsValidToken() {
-        String token = jwtService.generateToken(ANY_USERNAME);
+    void givenNullCookies_whenExtractUserIdFromCookies_thenReturnsEmpty() {
+        Optional<Long> result = jwt.extractUserIdFromCookies(null);
 
-        assertNotNull(token);
-        assertTrue(jwtService.isValid(token));
+        assertTrue(result.isEmpty());
     }
 
     @Test
-    void givenGoodGeneratedToken_whenExtractUsername_ReturnsCorrectUsername() {
-        String token = jwtService.generateToken(ANY_USERNAME);
+    void givenCookiesWithoutSessionCookie_whenExtractUserIdFromCookies_thenReturnsEmpty() {
+        Cookie[] cookies = new Cookie[]{new Cookie("theme", "dark")};
 
-        String username = jwtService.extractUsername(token);
+        Optional<Long> result = jwt.extractUserIdFromCookies(cookies);
 
-        assertEquals(ANY_USERNAME, username);
+        assertTrue(result.isEmpty());
     }
 
     @Test
-    void givenInvalidToken_whenIsValid_thenReturnsFalse() {
-        assertFalse(jwtService.isValid(FAKE_TOLKEN));
+    void givenValidSessionCookie_whenExtractUserIdFromCookies_thenReturnsUserId() {
+        String token = jwt.generateToken(42L);
+        Cookie[] cookies = new Cookie[]{new Cookie("session", token)};
+
+        Optional<Long> result = jwt.extractUserIdFromCookies(cookies);
+
+        assertEquals(Optional.of(42L), result);
+    }
+
+    @Test
+    void givenInvalidSessionCookie_whenExtractUserIdFromCookies_thenReturnsEmpty() {
+        Cookie[] cookies = new Cookie[]{new Cookie("session", "not-a-real-token")};
+
+        Optional<Long> result = jwt.extractUserIdFromCookies(cookies);
+
+        assertTrue(result.isEmpty());
     }
 }
