@@ -20,34 +20,14 @@ public class JwtHandshakeHandler extends DefaultHandshakeHandler {
     }
 
     @Override
-    protected Principal determineUser(
-            ServerHttpRequest request,
-            WebSocketHandler wsHandler,
-            Map<String, Object> attributes) {
+    protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler,
+                                      Map<String, Object> attributes) {
 
         if (request instanceof ServletServerHttpRequest servletRequest) {
-
             HttpServletRequest req = servletRequest.getServletRequest();
-
-            Cookie[] cookies = req.getCookies();
-
-            if (cookies != null) {
-
-                for (Cookie cookie : cookies) {
-
-                    if ("session".equals(cookie.getName())) {
-
-                        String token = cookie.getValue();
-
-                        if (jwt.isValid(token)) {
-
-                            Long userId = jwt.extractUserId(token);
-
-                            return new CustomUserPrincipal(userId);
-                        }
-                    }
-                }
-            }
+            return jwt.extractUserIdFromCookies(req.getCookies())
+                    .<Principal>map(CustomUserPrincipal::new)
+                    .orElse(null);
         }
 
         return null;

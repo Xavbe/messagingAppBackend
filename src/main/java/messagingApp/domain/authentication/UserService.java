@@ -14,10 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final JwtAuthentificationSecurity jwtAuthentificationSecurity;
 
     public String register(String username, String email, String password) {
@@ -52,7 +49,7 @@ public class UserService {
     }
 
     public void disconnect(String user) {
-        var storedUser = userRepository.findByUsername(user.describeConstable().orElse(null));
+        var storedUser = userRepository.findByUsername(user);
         storedUser.ifPresent(value -> {
             value.setStatus(Status.OFFLINE);
             userRepository.save(value);
@@ -75,5 +72,10 @@ public class UserService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    public User findByUsername(String currentUsername) {
+        return userRepository.findByUsername(currentUsername).orElseThrow(
+                () -> new UsernameNotFoundException("User not found"));
     }
 }

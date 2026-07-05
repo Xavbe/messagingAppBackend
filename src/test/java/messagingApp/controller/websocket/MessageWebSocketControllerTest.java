@@ -1,5 +1,6 @@
 package messagingApp.controller.websocket;
 
+import messagingApp.controller.message.MessageResponse;
 import messagingApp.domain.message.MessageService;
 import messagingApp.infrastructure.MessageEntity.MessageEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ class MessageWebSocketControllerTest {
 
     private MessageEntity message;
     private CustomUserPrincipal principal;
+    private MessageResponse messageResponse;
 
     @BeforeEach
     void setUp() {
@@ -40,7 +42,7 @@ class MessageWebSocketControllerTest {
         SendMessageRequest request = new SendMessageRequest(CONVERSATION_ID, CONTENT);
 
         when(messageService.sendMessage(CONVERSATION_ID, USER_ID, CONTENT))
-                .thenReturn(message);
+                .thenReturn(messageResponse);
 
         controller.sendMessage(request, principal);
 
@@ -53,7 +55,7 @@ class MessageWebSocketControllerTest {
         SendMessageRequest request = new SendMessageRequest(specificId, CONTENT);
 
           when(messageService.sendMessage(specificId, USER_ID, CONTENT))
-                .thenReturn(message);
+                .thenReturn(messageResponse);
 
         controller.sendMessage(request, principal);
 
@@ -65,13 +67,13 @@ class MessageWebSocketControllerTest {
         SendMessageRequest request = new SendMessageRequest(CONVERSATION_ID, CONTENT);
 
         when(messageService.sendMessage(CONVERSATION_ID, USER_ID, CONTENT))
-                .thenReturn(message);
+                .thenReturn(messageResponse);
 
         controller.sendMessage(request, principal);
 
         verify(messagingTemplate).convertAndSend(
                 "/topic/conversations/" + CONVERSATION_ID + "/messages",
-                message
+                messageResponse
         );
     }
 }

@@ -1,5 +1,7 @@
 package messagingApp.controller.websocket;
 
+import messagingApp.controller.message.MessageMapper;
+import messagingApp.controller.message.MessageResponse;
 import messagingApp.domain.message.MessageService;
 import messagingApp.infrastructure.MessageEntity.MessageEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class MessageWebSocketController {
     private MessageService messageService;
 
     @Autowired
+    private MessageMapper messageMapper;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/message.send")
@@ -23,7 +28,7 @@ public class MessageWebSocketController {
 
         Long userId = getUserId(principal);
 
-        MessageEntity message = messageService.sendMessage(
+        MessageResponse response = messageService.sendMessage(
                 request.conversationId(),
                 userId,
                 request.content()
@@ -31,7 +36,7 @@ public class MessageWebSocketController {
 
         messagingTemplate.convertAndSend(
                 "/topic/conversations/" + request.conversationId() + "/messages",
-                message
+                response
         );
     }
 

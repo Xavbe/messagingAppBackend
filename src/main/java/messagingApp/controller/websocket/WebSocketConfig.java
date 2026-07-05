@@ -15,7 +15,8 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import java.util.List;
+import java.util.List;import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -38,6 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setHandshakeHandler(
                         new JwtHandshakeHandler(jwt)
                 )
+                .setAllowedOriginPatterns("http://localhost:5173")
                 .withSockJS();
     }
 
@@ -45,9 +47,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public boolean configureMessageConverters(List<MessageConverter> messageConverters){
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // ajoute le support de LocalDateTime, etc.
+
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setObjectMapper(new ObjectMapper());
+        converter.setObjectMapper(objectMapper);
         converter.setContentTypeResolver(resolver);
+
         messageConverters.add(new StringMessageConverter());
         messageConverters.add(new ByteArrayMessageConverter());
         messageConverters.add(converter);
