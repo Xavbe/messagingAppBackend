@@ -1,0 +1,315 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "messagingApp.config" {
+class DbAddonsForTests {
+  public createTestUser()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class AuthenticationController {
+  private userService : UserService
+  private secureCookie : boolean
+  public login()
+  public register()
+  public disconnect()
+  private setCookie()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class AuthenticationRequest <<record>> {
+  public AuthenticationRequest()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class CookieVerification {
+  private jwtService : final JwtAuthentificationSecurity
+  public doFilterInternal()
+  private recoverSessionToken()
+  private createAccessAuthentication()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class CorsConfig {
+  public corsFilter()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class JwtAuthenticationFilter {
+  private jwt : JwtAuthentificationSecurity
+  public doFilter()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class JwtAuthentificationSecurity {
+  private SECRET_KEY : String
+  public generateToken()
+  public extractUserId()
+  public isValid()
+  private getSigningKey()
+  public extractUserIdFromCookies()
+}
+}
+
+package "messagingApp.controller.authentication.me" {
+class MeController {
+  private userService : UserService
+  public me()
+}
+}
+
+package "messagingApp.controller.authentication.me" {
+class MeResponse <<record>> {
+  public MeResponse()
+}
+}
+
+package "messagingApp.controller.authentication" {
+class SecurityConfig {
+  private jwtService : JwtAuthentificationSecurity
+  public cookieVerification()
+  public securityFilterChain()
+}
+}
+
+package "messagingApp.controller.conversation" {
+class ConversationController {
+  private conversationService : ConversationService
+  private userService : UserService
+  public getConversations()
+  public createConversation()
+}
+}
+
+package "messagingApp.controller.conversation" {
+class ConversationResponse <<record>> {
+  public ConversationResponse()
+  public from()
+}
+}
+
+package "messagingApp.controller.conversation" {
+class CreateConversationRequest <<record>> {
+  public CreateConversationRequest()
+}
+}
+
+package "messagingApp.controller.message" {
+class MessageMapper {
+  public getSendMessagesFormat()
+  private getMessageToSendFormat()
+  private getType()
+  private getLastMessagesId()
+  private getContent()
+  private getLastMessagesOfConversation()
+  public getSendMessageFormat()
+}
+}
+
+package "messagingApp.controller.message" {
+class MessageResponse <<record>> {
+  public MessageResponse()
+}
+}
+
+package "messagingApp.controller.message" {
+class MessagesController {
+  private messageService : MessageService
+  private messageMapper : MessageMapper
+  private conversationService : ConversationService
+  public getMessages()
+}
+}
+
+package "messagingApp.controller.message" {
+class MessagesResponse <<record>> {
+  public MessagesResponse()
+}
+}
+
+package "messagingApp.controller.websocket" {
+class CustomUserPrincipal {
+  private userId : final Long
+  public getUserId()
+  public getName()
+}
+}
+
+package "messagingApp.controller.websocket" {
+class JwtHandshakeHandler {
+  private jwt : final JwtAuthentificationSecurity
+  protected determineUser()
+}
+}
+
+package "messagingApp.controller.websocket" {
+class JwtHandshakeInterceptor {
+  private jwt : final JwtAuthentificationSecurity
+  public beforeHandshake()
+  public afterHandshake()
+}
+}
+
+package "messagingApp.controller.websocket" {
+class MessageWebSocketController {
+  private messageService : MessageService
+  private messageMapper : MessageMapper
+  private messagingTemplate : SimpMessagingTemplate
+  public sendMessage()
+  private getUserId()
+}
+}
+
+package "messagingApp.controller.websocket" {
+class SendMessageRequest <<record>> {
+  public SendMessageRequest()
+}
+}
+
+package "messagingApp.controller.websocket" {
+class WebSocketConfig {
+  private jwt : JwtAuthentificationSecurity
+  public configureMessageBroker()
+  public registerStompEndpoints()
+  public configureMessageConverters()
+}
+}
+
+package "messagingApp.domain.authentication" {
+class IncorrectPassword {
+}
+}
+
+package "messagingApp.domain.authentication" {
+class UserAlreadyExists {
+}
+}
+
+package "messagingApp.domain.authentication" {
+class UsernameNotFoundException {
+}
+}
+
+package "messagingApp.domain.authentication" {
+interface UserRepository {
+}
+}
+
+package "messagingApp.domain.authentication" {
+class UserService {
+  private userRepository : final UserRepository
+  private jwtAuthentificationSecurity : final JwtAuthentificationSecurity
+  public register()
+  public login()
+  public disconnect()
+  public findConnectedUsers()
+  public findUserbyId()
+  private validateRegistrationRequest()
+  private isBlank()
+  public findByUsername()
+}
+}
+
+package "messagingApp.domain.Conversation" {
+class ConversationNotFoundException {
+}
+}
+
+package "messagingApp.domain.Conversation" {
+interface ConversationRepository {
+}
+}
+
+package "messagingApp.domain.Conversation" {
+class ConversationService {
+  private conversationRepository : ConversationRepository
+  private userService : UserService
+  public findByUsername()
+  public getConversationById()
+  public createConversation()
+  public getConversationWithUserAndName()
+  public isMember()
+}
+}
+
+package "messagingApp.domain.message" {
+interface MessageRepository {
+}
+}
+
+package "messagingApp.domain.message" {
+class MessageService {
+  private messageRepository : MessageRepository
+  private conversationService : ConversationService
+  private userService : UserService
+  private messageMapper : MessageMapper
+  public getMessage()
+  public sendMessage()
+}
+}
+
+package "messagingApp" {
+class HookProbe {
+  private name : String
+  public name()
+}
+}
+
+package "messagingApp.infrastructure" {
+class Conversation {
+  private id : UUID
+  private name : String
+  private users : List<User>
+  private lastMessageAt : LocalDateTime
+  public addMember()
+  public removeMember()
+  public getName()
+}
+}
+
+package "messagingApp.infrastructure.MessageEntity" {
+abstract class MessageEntity {
+  private id : UUID
+  private conversation : Conversation
+  private sender : User
+  private timestamp : LocalDateTime
+  public setContent()
+}
+}
+
+package "messagingApp.infrastructure.MessageEntity" {
+class TextMessageEntity {
+  private content : String
+  public getContent()
+  public setContent()
+}
+}
+
+package "messagingApp.infrastructure" {
+enum Status {
+}
+}
+
+package "messagingApp.infrastructure" {
+class User {
+  private id : Long
+  private username : String
+  private email : String
+  private hashedPassword : String
+  private status : Status
+}
+}
+
+package "messagingApp" {
+class Main {
+  public main()
+}
+}
+
+@enduml
