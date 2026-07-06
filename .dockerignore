@@ -1,0 +1,9 @@
+.gradle
+.idea
+build
+gradle-log.txt
+*.iml
+.git
+.github
+.githooks
+.agents

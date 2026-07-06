@@ -35,7 +35,9 @@ public class CookieVerification extends OncePerRequestFilter {
         }
 
         if (token != null && jwtService.isValid(token)) {
-            createAccesAuthentification(token);
+            Long userId = jwtService.extractUserId(token);
+            request.setAttribute("userId", userId);
+            createAccessAuthentication(userId);
         }
 
         chain.doFilter(request, response);
@@ -49,10 +51,7 @@ public class CookieVerification extends OncePerRequestFilter {
                 .orElse(null);
     }
 
-    private void createAccesAuthentification(String token) {
-
-        Long userId = jwtService.extractUserId(token);
-
+    private void createAccessAuthentication(Long userId) {
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(userId, null, List.of());
 
