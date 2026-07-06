@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import messagingApp.domain.authentication.UserAlreadyExists;
 import messagingApp.domain.authentication.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,9 @@ public class AuthenticationController {
 
     @Autowired
     private UserService userService;
+
+    @Value("${app.cookie.secure:false}")
+    private boolean secureCookie;
 
     @PostMapping("/login")
     @SendTo("/user/topic")
@@ -55,7 +59,7 @@ public class AuthenticationController {
     private void setCookie(String token, HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("session", token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(secureCookie)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
                 .sameSite("Lax")
