@@ -1,0 +1,97 @@
+name: Messaging App System Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *"
+
+jobs:
+  system-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Create system test compose file
+        run: |
+          cat > docker-compose.system-test.yml <<'EOF'
+          services:
+            db:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_DB: messagingapp
+                POSTGRES_USER: postgres
+                POSTGRES_PASSWORD: postgres
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U postgres -d messagingapp"]
+                interval: 5s
+                timeout: 5s
+                retries: 10
+
+            backend:
+              image: xavbe/messaging-backend:latest
+              environment:
+                SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/messagingapp
+                SPRING_DATASOURCE_USERNAME: postgres
+                SPRING_DATASOURCE_PASSWORD: postgres
+                SPRING_JPA_HIBERNATE_DDL_AUTO: update
+                SPRING_PROFILES_ACTIVE: dev
+                SPRING_SECURITY_LOG_LEVEL: INFO
+                JWT_SECRET: 7132CE6EF35F2E76CBF9CBBAAF4F5FF2
+                APP_COOKIE_SECURE: false
+              depends_on:
+                db:
+                  condition: service_healthy
+
+            frontend:
+              image: xavbe/messaging-frontend:latest
+              ports:
+                - "3000:80"
+              depends_on:
+                - backend
+          EOF
+
+      - name: Start published stack
+        run: docker compose -f docker-compose.system-test.yml up -d
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f docker-compose.system-test.yml logs
+          exit 1
+
+      - name: Wait for backend through frontend proxy
+        run: |
+          for i in {1..60}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/me || true)
+            if [ "$status" = "401" ] || [ "$status" = "403" ]; then
+              exit 0
+            fi
+            echo "Backend not ready through proxy yet. HTTP status: $status"
+            sleep 2
+          done
+          docker compose -f docker-compose.system-test.yml ps
+          docker compose -f docker-compose.system-test.yml logs
+          exit 1
+
+      - name: Smoke test API through frontend
+        run: |
+          curl -fsS -c cookies.txt \
+            -H "Content-Type: application/json" \
+            -d '{"username":"test","password":"password123"}' \
+            http://localhost:3000/api/login
+
+          curl -fsS -b cookies.txt http://localhost:3000/api/me
+          curl -fsS -b cookies.txt http://localhost:3000/api/conversations
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.system-test.yml logs
+
+      - name: Stop stack
+        if: always()
+        run: docker compose -f docker-compose.system-test.yml down -v
