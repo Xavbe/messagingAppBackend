@@ -1,5 +1,7 @@
 @startuml
+left to right direction
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
 
 package "messagingApp.config" {
 class DbAddonsForTests {
@@ -251,13 +253,6 @@ class MessageService {
   private messageMapper : MessageMapper
   public getMessage()
   public sendMessage()
-}
-}
-
-package "messagingApp" {
-class HookProbe {
-  private name : String
-  public name()
 }
 }
 
