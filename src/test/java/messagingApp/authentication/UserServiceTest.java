@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +23,9 @@ class UserServiceTest {
     private static final String CORRECT_USERNAME = "patrice";
     private static final String CORRECT_EMAIL = "patrice@example.com";
     private static final String EXISTING_EMAIL = "existing@example.com";
+    private static final String FRIEND_EMAIL = "friend@example.com";
+    private static final Long CURRENT_USER_ID = 1L;
+    private static final Long FRIEND_USER_ID = 2L;
     private static final String CORRECT_PASSWORD = "password*!";
     private static final String EXISTING_USERNAME = "patrice";
 
@@ -150,5 +154,77 @@ class UserServiceTest {
         List<User> result = userService.findConnectedUsers();
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void givenExistingUsers_whenAddFriend_thenFriendIsAddedToCurrentUser() {
+        User currentUser = new User(CORRECT_USERNAME, CORRECT_EMAIL, "hash");
+        currentUser.setId(CURRENT_USER_ID);
+        currentUser.setFriends(new ArrayList<>());
+        User friend = new User("friend", FRIEND_EMAIL, "hash");
+        friend.setId(FRIEND_USER_ID);
+
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(currentUser));
+        when(userRepository.findByEmail(FRIEND_EMAIL)).thenReturn(Optional.of(friend));
+
+        userService.addFriend(CURRENT_USER_ID, FRIEND_EMAIL);
+
+        assertTrue(currentUser.getFriends().contains(friend));
+    }
+
+    @Test
+    void givenUnknownCurrentUser_whenAddFriend_thenThrowsException() {
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> userService.addFriend(CURRENT_USER_ID, FRIEND_EMAIL));
+    }
+
+    @Test
+    void givenExistingUsers_whenAddFriend_thenCurrentUserIsSaved() {
+        User currentUser = new User(CORRECT_USERNAME, CORRECT_EMAIL, "hash");
+        currentUser.setId(CURRENT_USER_ID);
+        User friend = new User("friend", FRIEND_EMAIL, "hash");
+        friend.setId(FRIEND_USER_ID);
+
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(currentUser));
+        when(userRepository.findByEmail(FRIEND_EMAIL)).thenReturn(Optional.of(friend));
+
+        userService.addFriend(CURRENT_USER_ID, FRIEND_EMAIL);
+
+        verify(userRepository).save(currentUser);
+    }
+
+    @Test
+    void givenSameUser_whenAddFriend_thenThrowsException() {
+        User currentUser = new User(CORRECT_USERNAME, CORRECT_EMAIL, "hash");
+        currentUser.setId(CURRENT_USER_ID);
+        User sameUser = new User(CORRECT_USERNAME, CORRECT_EMAIL, "hash");
+        sameUser.setId(CURRENT_USER_ID);
+
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(currentUser));
+        when(userRepository.findByEmail(CORRECT_EMAIL)).thenReturn(Optional.of(sameUser));
+
+        assertThrows(IllegalArgumentException.class, () -> userService.addFriend(CURRENT_USER_ID, CORRECT_EMAIL));
+    }
+
+    @Test
+    void givenKnownUser_whenGetFriends_thenReturnsFriends() {
+        User friend = new User("friend", FRIEND_EMAIL, "hash");
+        User currentUser = new User(CORRECT_USERNAME, CORRECT_EMAIL, "hash");
+        currentUser.setId(CURRENT_USER_ID);
+        currentUser.setFriends(List.of(friend));
+
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.of(currentUser));
+
+        List<User> result = userService.getFriends(CURRENT_USER_ID);
+
+        assertEquals(List.of(friend), result);
+    }
+
+    @Test
+    void givenUnknownUser_whenGetFriends_thenThrowsException() {
+        when(userRepository.findById(CURRENT_USER_ID)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> userService.getFriends(CURRENT_USER_ID));
     }
 }

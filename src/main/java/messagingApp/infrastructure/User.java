@@ -3,6 +3,8 @@ package messagingApp.infrastructure;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,6 +26,14 @@ public class User {
     @Column(nullable = false)
     private String hashedPassword;
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<User> friends = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private Status status;
 
@@ -38,5 +48,11 @@ public class User {
     }
 
     public User() {
+    }
+
+    public void addFriend(User user) {
+        if (!friends.contains(user)) {
+            friends.add(user);
+        }
     }
 }

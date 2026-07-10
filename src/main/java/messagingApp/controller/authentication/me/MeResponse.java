@@ -1,4 +1,4 @@
 package messagingApp.controller.authentication.me;
 
-public record MeResponse(String username) {
+public record MeResponse(String username, String email) {
 }
