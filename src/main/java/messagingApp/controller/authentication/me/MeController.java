@@ -2,6 +2,7 @@ package messagingApp.controller.authentication.me;
 
 import jakarta.servlet.http.HttpServletRequest;
 import messagingApp.domain.authentication.UserService;
+import messagingApp.infrastructure.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class MeController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String username = userService.findUserbyId(userId).getUsername();
-        return ResponseEntity.ok(new MeResponse(username));
+        User user = userService.findUserbyId(userId);
+        return ResponseEntity.ok(new MeResponse(user.getUsername(), user.getEmail()));
     }
 }

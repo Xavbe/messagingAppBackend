@@ -75,7 +75,9 @@ mkdir -p "$UML_DIR"
 
 {
   echo "@startuml"
+  echo "left to right direction"
   echo "skinparam classAttributeIconSize 0"
+  echo "skinparam packageStyle rectangle"
   echo ""
 
   while IFS= read -r -d '' file; do
@@ -91,7 +93,8 @@ if [ ! -f "$PLANTUML_JAR" ]; then
 fi
 
 java -jar "$PLANTUML_JAR" -tpng "$PUML_FILE"
-git add "$PUML_FILE" "$UML_DIR/classes.png"
+java -jar "$PLANTUML_JAR" -tsvg "$PUML_FILE"
+git add "$PUML_FILE" "$UML_DIR/classes.png" "$UML_DIR/classes.svg"
 
 echo "Running Checkstyle..."
 run_gradle checkstyleMain checkstyleTest

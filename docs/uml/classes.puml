@@ -1,5 +1,7 @@
 @startuml
+left to right direction
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
 
 package "messagingApp.config" {
 class DbAddonsForTests {
@@ -133,6 +135,39 @@ class MessagesResponse <<record>> {
 }
 }
 
+package "messagingApp.controller.user" {
+class AddFriendRequest <<record>> {
+  public AddFriendRequest()
+}
+}
+
+package "messagingApp.controller.user" {
+class FriendMapper {
+  public getFriendList()
+}
+}
+
+package "messagingApp.controller.user" {
+class ResponseFriend <<record>> {
+  public ResponseFriend()
+}
+}
+
+package "messagingApp.controller.user" {
+class ResponseFriendList <<record>> {
+  public ResponseFriendList()
+}
+}
+
+package "messagingApp.controller.user" {
+class UserController {
+  private userService : final UserService
+  private friendMapper : final FriendMapper
+  public addFriend()
+  public getFriends()
+}
+}
+
 package "messagingApp.controller.websocket" {
 class CustomUserPrincipal {
   private userId : final Long
@@ -213,6 +248,8 @@ class UserService {
   private validateRegistrationRequest()
   private isBlank()
   public findByUsername()
+  public addFriend()
+  public getFriends()
 }
 }
 
@@ -251,13 +288,6 @@ class MessageService {
   private messageMapper : MessageMapper
   public getMessage()
   public sendMessage()
-}
-}
-
-package "messagingApp" {
-class HookProbe {
-  private name : String
-  public name()
 }
 }
 
@@ -302,7 +332,9 @@ class User {
   private username : String
   private email : String
   private hashedPassword : String
+  private friends : List<User>
   private status : Status
+  public addFriend()
 }
 }
 
