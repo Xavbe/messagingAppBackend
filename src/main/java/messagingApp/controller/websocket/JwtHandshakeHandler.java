@@ -1,6 +1,5 @@
 package messagingApp.controller.websocket;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import messagingApp.controller.authentication.JwtAuthentificationSecurity;
 import org.springframework.http.server.ServerHttpRequest;

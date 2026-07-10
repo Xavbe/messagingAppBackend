@@ -2,13 +2,11 @@ name: Messaging App System Test
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 10 * * *"
 
 jobs:
   system-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
 
     steps:
       - name: Create system test compose file
@@ -55,7 +53,7 @@ jobs:
 
       - name: Wait for frontend
         run: |
-          for i in {1..30}; do
+          for i in {1..15}; do
             if curl -fsS http://localhost:3000/ >/dev/null; then
               exit 0
             fi
@@ -66,7 +64,7 @@ jobs:
 
       - name: Wait for backend through frontend proxy
         run: |
-          for i in {1..60}; do
+          for i in {1..30}; do
             status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/me || true)
             if [ "$status" = "401" ] || [ "$status" = "403" ]; then
               exit 0

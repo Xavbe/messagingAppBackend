@@ -5,8 +5,8 @@ import messagingApp.controller.authentication.JwtAuthentificationSecurity;
 import messagingApp.infrastructure.Status;
 import messagingApp.infrastructure.User;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -77,5 +77,23 @@ public class UserService {
     public User findByUsername(String currentUsername) {
         return userRepository.findByUsername(currentUsername).orElseThrow(
                 () -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Transactional
+    public void addFriend(Long currentUserId, String friendEmail) {
+        User currentUser = findUserbyId(currentUserId);
+        User friendUser = userRepository.findByEmail(friendEmail).orElseThrow(
+                () -> new UsernameNotFoundException("User not found"));
+
+        if (currentUser.getId() != null && currentUser.getId().equals(friendUser.getId())) {
+            throw new IllegalArgumentException("Cannot add yourself as a friend");
+        }
+
+        currentUser.addFriend(friendUser);
+        userRepository.save(currentUser);
+    }
+
+    public List<User> getFriends(Long currentUserId) {
+        return findUserbyId(currentUserId).getFriends();
     }
 }
